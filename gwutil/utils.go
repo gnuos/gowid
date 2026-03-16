@@ -56,7 +56,7 @@ func LimitTo(a, v, b int) int {
 // StringOfLength returns a string consisting of n runes.
 func StringOfLength(r rune, n int) string {
 	res := make([]rune, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		res[i] = r
 	}
 	return string(res)
@@ -124,7 +124,6 @@ func (slice fractlist) Swap(i, j int) {
 //
 // counts -- list of integers ('votes per party')
 // alloc -- total amount to be allocated ('total amount of seats')
-//
 func HamiltonAllocation(counts []int, alloc int) []int {
 
 	totalCounts := Sum(counts...)
@@ -155,7 +154,7 @@ func HamiltonAllocation(counts []int, alloc int) []int {
 
 	remainder := alloc - Sum(res...)
 
-	for i := 0; i < remainder; i++ {
+	for i := range remainder {
 		res[fracts[i].idx] += 1
 	}
 
@@ -180,7 +179,7 @@ func LStripByte(data []byte, s byte) []byte {
 
 type IOption interface {
 	IsNone() bool
-	Value() interface{}
+	Value() any
 }
 
 // For fmt.Stringer
@@ -215,13 +214,13 @@ func (i IntOption) IsNone() bool {
 	return !i.some
 }
 
-func (i IntOption) Value() interface{} {
+func (i IntOption) Value() any {
 	return i.Val()
 }
 
 func (i IntOption) Val() int {
 	if i.IsNone() {
-		panic(errors.New("Called Val on empty IntOption"))
+		panic(errors.New("called Val on empty IntOption"))
 	}
 	return i.val
 }
@@ -254,13 +253,13 @@ func (i Int64Option) IsNone() bool {
 	return !i.some
 }
 
-func (i Int64Option) Value() interface{} {
+func (i Int64Option) Value() any {
 	return i.Val()
 }
 
 func (i Int64Option) Val() int64 {
 	if i.IsNone() {
-		panic(errors.New("Called Val on empty Int64Option"))
+		panic(errors.New("called Val on empty Int64Option"))
 	}
 	return i.val
 }
@@ -293,13 +292,13 @@ func (i RuneOption) IsNone() bool {
 	return !i.some
 }
 
-func (i RuneOption) Value() interface{} {
+func (i RuneOption) Value() any {
 	return i.Val()
 }
 
 func (i RuneOption) Val() rune {
 	if i.IsNone() {
-		panic(errors.New("Called Val on empty ByteOption"))
+		panic(errors.New("called Val on empty ByteOption"))
 	}
 	return i.val
 }
@@ -339,7 +338,7 @@ func RoundFloatToInt(val float32) int {
 //======================================================================
 
 // If is a convenience function for mimicking a ternary operator e.g. If(x<y, x, y).(int)
-func If(statement bool, a, b interface{}) interface{} {
+func If(statement bool, a, b any) any {
 	if statement {
 		return a
 	}

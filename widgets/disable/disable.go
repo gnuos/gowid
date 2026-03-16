@@ -8,7 +8,7 @@ package disable
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
+	"github.com/gnuos/gowid"
 )
 
 //======================================================================
@@ -78,7 +78,7 @@ func (w *Widget) Selectable() bool {
 	return !w.isDisabled && w.SubWidget().Selectable()
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	if w.isDisabled {
 		return false
 	}

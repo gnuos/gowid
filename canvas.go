@@ -7,11 +7,12 @@ package gowid
 import (
 	"fmt"
 	"io"
+	"maps"
 	"strings"
 	"unicode/utf8"
 
-	"github.com/gcla/gowid/gwutil"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid/gwutil"
 	"github.com/mattn/go-runewidth"
 	"github.com/pkg/errors"
 )
@@ -295,7 +296,7 @@ func NewCanvasOfSize(cols, rows int) *Canvas {
 // each Cell is initialized by copying the fill argument.
 func NewCanvasOfSizeExt(cols, rows int, fill Cell) *Canvas {
 	fillArr := make([]Cell, cols)
-	for i := 0; i < cols; i++ {
+	for i := range cols {
 		fillArr[i] = fill
 	}
 
@@ -323,9 +324,7 @@ func (c *Canvas) Duplicate() ICanvas {
 	if c.Marks != nil {
 		marks := make(map[string]CanvasPos)
 		res.Marks = &marks
-		for k, v := range *c.Marks {
-			(*res.Marks)[k] = v
-		}
+		maps.Copy(*res.Marks, *c.Marks)
 	}
 	return res
 }
@@ -662,7 +661,7 @@ func (c *Canvas) MergeWithFunc(c2 IMergeCanvas, leftOffset, topOffset int, fn Ce
 	for i := 0; i < c2.BoxRows(); i++ {
 		if i+topOffset < len(c.Lines) {
 			cl := len(c.Lines[i+topOffset])
-			for j := 0; j < c2w; j++ {
+			for j := range c2w {
 				if j+leftOffset < cl {
 					c2ij := c2.CellAt(j, i)
 					c.Lines[i+topOffset][j+leftOffset] = fn(c.Lines[i+topOffset][j+leftOffset], c2ij)
@@ -707,7 +706,7 @@ func (c *Canvas) AppendRight(c2 IMergeCanvas, useCursor bool) {
 		} else {
 			c.Lines[y] = c.Lines[y][0 : len(c.Lines[y])+c2w]
 		}
-		for x := 0; x < c2w; x++ {
+		for x := range c2w {
 			c.Lines[y][x+m] = c2.CellAt(x, y)
 		}
 	}
@@ -764,7 +763,7 @@ func appendCell(slice []Cell, data Cell, num int) []Cell {
 		slice = newSlice
 	}
 	slice = slice[0:n]
-	for i := 0; i < num; i++ {
+	for i := range num {
 		slice[m+i] = data
 	}
 	return slice
@@ -795,7 +794,7 @@ func (c *Canvas) AlignRight() {
 	c.AlignRightWith(Cell{})
 }
 
-// Draw will render a Canvas to a tcell Screen.
+// Draw will render a Canvas to a Screen.
 func Draw(canvas IDrawCanvas, mode IColorMode, screen tcell.Screen) {
 	cpos := CanvasPos{X: -1, Y: -1}
 	if canvas.CursorEnabled() {

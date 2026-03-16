@@ -8,9 +8,9 @@ package overlay
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/widgets/padding"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/widgets/padding"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -45,7 +45,7 @@ func NewMouseChecker(inner gowid.IWidget, clickWasInBounds func()) *MouseChecker
 	return res
 }
 
-func (w *MouseCheckerWidget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *MouseCheckerWidget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	if ev2, ok := ev.(*tcell.EventMouse); ok {
 		mx, my := ev2.Position()
 		ss := w.RenderSize(size, focus, app)
@@ -218,7 +218,7 @@ func (w *Widget) Selectable() bool {
 	return (w.top != nil && w.top.Selectable()) || w.bottom.Selectable()
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -248,7 +248,7 @@ func (w *Widget) IgnoreLowerStyle() bool {
 
 //======================================================================
 
-func UserInput(w IOverlay, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IOverlay, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := false
 	notOccluded := true
 

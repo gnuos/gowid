@@ -8,7 +8,7 @@ package fill
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
+	"github.com/gnuos/gowid"
 )
 
 //======================================================================
@@ -70,7 +70,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 
 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-func RenderSize(w interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderBox {
+func RenderSize(w any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderBox {
 	cols, haveCols := size.(gowid.IColumns)
 	rows, haveRows := size.(gowid.IRows)
 	switch {

@@ -5,31 +5,30 @@
 package main
 
 import (
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/fill"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/overlay"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/fill"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/overlay"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 	log "github.com/sirupsen/logrus"
 )
 
 //======================================================================
 
 var ov *overlay.Widget
-var ovh, ovw int = 50, 50
 
 //======================================================================
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	handled := false
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		handled = true
-		if evk.Key() == tcell.KeyCtrlC || evk.Key() == tcell.KeyEsc || evk.Rune() == 'q' || evk.Rune() == 'Q' {
+		if evk.Key() == tcell.KeyCtrlC || evk.Key() == tcell.KeyEsc || evk.Str() == "q" || evk.Str() == "Q" {
 			app.Quit()
 		} else {
 			handled = false

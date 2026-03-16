@@ -7,23 +7,23 @@ package main
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/text"
 )
 
 //======================================================================
 
 var txt *text.Widget
 
-func unhandled(app gowid.IApp, ev interface{}) bool {
+func unhandled(app gowid.IApp, ev any) bool {
 	if evk, ok := ev.(*tcell.EventKey); ok {
-		switch evk.Rune() {
-		case 'q', 'Q':
+		switch evk.Str() {
+		case "q", "Q":
 			app.Quit()
 		default:
-			txt.SetText(fmt.Sprintf("hello world - %c", evk.Rune()), app)
+			txt.SetText(fmt.Sprintf("hello world - %s", evk.Str()), app)
 		}
 	}
 	return true

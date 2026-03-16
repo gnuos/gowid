@@ -8,9 +8,9 @@ package hpadding
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -105,7 +105,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return Render(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -172,7 +172,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 // UserInput will adjust the input event's x coordinate depending on the input size
 // and widget alignment. If the input is e.g. IRenderFixed, then no adjustment is
 // made.
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 
 	subSize := w.SubWidgetSize(size, focus, app)
 	ss := w.SubWidget().RenderSize(subSize, focus, app)

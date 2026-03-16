@@ -8,7 +8,7 @@ package isselected
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
+	"github.com/gnuos/gowid"
 )
 
 //======================================================================
@@ -57,7 +57,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return w.pick(focus).Render(size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return w.pick(focus).UserInput(ev, size, focus, app)
 }
 

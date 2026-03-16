@@ -8,8 +8,8 @@ package text
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -34,7 +34,7 @@ func (w *Widget1) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid
 	}
 }
 
-func (w *Widget1) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget1) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 
 	switch ev := ev.(type) {
 	case *tcell.EventKey:

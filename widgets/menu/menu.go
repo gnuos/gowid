@@ -8,11 +8,11 @@ package menu
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/widgets/holder"
-	"github.com/gcla/gowid/widgets/null"
-	"github.com/gcla/gowid/widgets/overlay"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/widgets/holder"
+	"github.com/gnuos/gowid/widgets/null"
+	"github.com/gnuos/gowid/widgets/overlay"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -241,7 +241,7 @@ func (w *Widget) Selectable() bool {
 	return true
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -249,7 +249,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return Render(w, size, focus, app)
 }
 
-func (w *rejectKeyInput) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *rejectKeyInput) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	if _, ok := ev.(*tcell.EventKey); ok && w.on {
 		return false
 	}
@@ -285,7 +285,7 @@ func (w *CachedOverlay) Render(size gowid.IRenderSize, focus gowid.Selector, app
 
 //======================================================================
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return gowid.UserInputIfSelectable(w.Overlay(), ev, size, focus, app)
 }
 
@@ -380,7 +380,7 @@ type AutoCloserWidget struct {
 	menu IWidget
 }
 
-func (w *AutoCloserWidget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *AutoCloserWidget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	wasOpen := w.menu.IsOpen()
 	res := w.IWidget.UserInput(ev, size, focus, app)
 
@@ -407,7 +407,7 @@ type NavWrapperWidget struct {
 	//index int
 }
 
-func (w *NavWrapperWidget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *NavWrapperWidget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := false
 
 	// if _, ok := ev.(*tcell.EventKey); ok {

@@ -5,13 +5,13 @@
 package main
 
 import (
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	"github.com/gcla/gowid/widgets/vpadding"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gnuos/gowid/widgets/vpadding"
 )
 
 //======================================================================

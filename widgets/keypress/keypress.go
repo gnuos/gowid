@@ -8,8 +8,8 @@ package keypress
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -21,7 +21,7 @@ type ICustomKeys interface {
 
 type KeyPressFunction func(app gowid.IApp, widget gowid.IWidget, key gowid.IKey)
 
-func (f KeyPressFunction) Changed(app gowid.IApp, widget gowid.IWidget, data ...interface{}) {
+func (f KeyPressFunction) Changed(app gowid.IApp, widget gowid.IWidget, data ...any) {
 	k := data[0].(gowid.IKey)
 	f(app, widget, k)
 }
@@ -30,18 +30,18 @@ func (f KeyPressFunction) Changed(app gowid.IApp, widget gowid.IWidget, data ...
 // that embeds a WidgetChangedFunction to be issued as a callback when a widget
 // property changes.
 type WidgetCallback struct {
-	Name interface{}
+	Name any
 	KeyPressFunction
 }
 
-func MakeCallback(name interface{}, fn KeyPressFunction) WidgetCallback {
+func MakeCallback(name any, fn KeyPressFunction) WidgetCallback {
 	return WidgetCallback{
 		Name:             name,
 		KeyPressFunction: fn,
 	}
 }
 
-func (f WidgetCallback) ID() interface{} {
+func (f WidgetCallback) ID() any {
 	return f.Name
 }
 
@@ -116,7 +116,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return Render(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -144,7 +144,7 @@ type IKeyPresser interface {
 	gowid.IComposite
 }
 
-func UserInput(w IKeyPresser, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IKeyPresser, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := false
 	switch ev := ev.(type) {
 	case *tcell.EventKey:

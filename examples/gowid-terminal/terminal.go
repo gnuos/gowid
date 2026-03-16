@@ -10,17 +10,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/fill"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/holder"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/terminal"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/fill"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/holder"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/terminal"
+	"github.com/gnuos/gowid/widgets/text"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -125,7 +125,7 @@ func (w *ResizeablePileWidget) FindNextSelectable(dir gowid.Direction, wrap bool
 	return gowid.FindNextSelectableFrom(w, w.Focus(), dir, wrap)
 }
 
-func (w *ResizeablePileWidget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *ResizeablePileWidget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return pile.UserInput(w, ev, size, focus, app)
 }
 
@@ -161,7 +161,7 @@ var twidgets []*terminal.Widget
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	handled := false
 
 	if evk, ok := ev.(*tcell.EventKey); ok {
@@ -171,21 +171,21 @@ func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
 			for _, t := range twidgets {
 				t.Signal(syscall.SIGINT)
 			}
-		case tcell.KeyCtrlBackslash:
+		case tcell.KeyCtrlQ:
 			handled = true
 			for _, t := range twidgets {
 				t.Signal(syscall.SIGQUIT)
 			}
 		case tcell.KeyRune:
 			handled = true
-			switch evk.Rune() {
-			case '>':
+			switch evk.Str() {
+			case ">":
 				cols.offset += 1
-			case '<':
+			case "<":
 				cols.offset -= 1
-			case '+':
+			case "+":
 				pilew.offset += 1
-			case '-':
+			case "-":
 				pilew.offset -= 1
 			default:
 				handled = false
@@ -209,7 +209,7 @@ func main() {
 		"line":    gowid.MakeStyledPaletteEntry(gowid.NewUrwidColor("black"), gowid.NewUrwidColor("light gray"), gowid.StyleBold),
 	}
 
-	hkDuration := terminal.HotKeyDuration{time.Second * 3}
+	hkDuration := terminal.HotKeyDuration{D: time.Second * 3}
 
 	twidgets = make([]*terminal.Widget, 0)
 	//foo := os.Env()
@@ -233,7 +233,7 @@ func main() {
 			HotKeyFns: []terminal.HotKeyInputFn{
 				func(ev *tcell.EventKey, w terminal.IWidget, app gowid.IApp) bool {
 					if w2, ok := w.(terminal.IScrollbar); ok {
-						if ev.Key() == tcell.KeyRune && ev.Rune() == 's' {
+						if ev.Key() == tcell.KeyRune && ev.Str() == "s" {
 							if w2.ScrollbarEnabled() {
 								w2.DisableScrollbar(app)
 							} else {
@@ -261,15 +261,15 @@ func main() {
 	hline := styled.New(fill.New('⎯'), gowid.MakePaletteRef("line"))
 
 	pilew = NewResizeablePile([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{twidgets[1], gowid.RenderWithWeight{1}},
-		&gowid.ContainerWidget{hline, gowid.RenderWithUnits{U: 1}},
-		&gowid.ContainerWidget{twidgets[2], gowid.RenderWithWeight{1}},
+		&gowid.ContainerWidget{IWidget: twidgets[1], D: gowid.RenderWithWeight{W: 1}},
+		&gowid.ContainerWidget{IWidget: hline, D: gowid.RenderWithUnits{U: 1}},
+		&gowid.ContainerWidget{IWidget: twidgets[2], D: gowid.RenderWithWeight{W: 1}},
 	})
 
 	cols = NewResizeableColumns([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{twidgets[0], gowid.RenderWithWeight{3}},
-		&gowid.ContainerWidget{vline, gowid.RenderWithUnits{U: 1}},
-		&gowid.ContainerWidget{pilew, gowid.RenderWithWeight{1}},
+		&gowid.ContainerWidget{IWidget: twidgets[0], D: gowid.RenderWithWeight{W: 3}},
+		&gowid.ContainerWidget{IWidget: vline, D: gowid.RenderWithUnits{U: 1}},
+		&gowid.ContainerWidget{IWidget: pilew, D: gowid.RenderWithWeight{W: 1}},
 	})
 
 	view := framed.New(cols, framed.Options{
@@ -278,13 +278,13 @@ func main() {
 	})
 
 	for _, t := range twidgets {
-		t.OnProcessExited(gowid.WidgetCallback{"cb",
-			func(app gowid.IApp, w gowid.IWidget) {
+		t.OnProcessExited(gowid.WidgetCallback{Name: "cb",
+			WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
 				app.Quit()
 			},
 		})
-		t.OnBell(gowid.WidgetCallback{"cb",
-			func(app gowid.IApp, w gowid.IWidget) {
+		t.OnBell(gowid.WidgetCallback{Name: "cb",
+			WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
 				twp.SetSubWidget(twir, app)
 				timer := time.NewTimer(time.Millisecond * 800)
 				go func() {
@@ -295,14 +295,14 @@ func main() {
 				}()
 			},
 		})
-		t.OnSetTitle(gowid.WidgetCallback{"cb",
-			func(app gowid.IApp, w gowid.IWidget) {
+		t.OnSetTitle(gowid.WidgetCallback{Name: "cb",
+			WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
 				w2 := w.(*terminal.Widget)
 				tw.SetText(" "+w2.GetTitle()+" ", app)
 			},
 		})
-		t.OnHotKey(gowid.WidgetCallback{"cb",
-			func(app gowid.IApp, w gowid.IWidget) {
+		t.OnHotKey(gowid.WidgetCallback{Name: "cb",
+			WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
 				w2 := w.(*terminal.Widget)
 				if w2.HotKeyActive() {
 					twp.SetSubWidget(twib, app)

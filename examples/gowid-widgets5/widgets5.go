@@ -5,10 +5,10 @@
 package main
 
 import (
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/vpadding"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/vpadding"
 	log "github.com/sirupsen/logrus"
 )
 

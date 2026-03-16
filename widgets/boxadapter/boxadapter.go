@@ -8,8 +8,8 @@ package boxadapter
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -75,7 +75,7 @@ func (w *Widget) SubWidgetSize(size gowid.IRenderSize, focus gowid.Selector, app
 	return SubWidgetSize(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -109,7 +109,7 @@ func Render(w IBoxAdapterWidget, size gowid.IRenderSize, focus gowid.Selector, a
 
 // Ensure that a valid mouse interaction with a flow widget will result in a
 // mouse interaction with the subwidget
-func UserInput(w IBoxAdapterWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IBoxAdapterWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	if _, ok := size.(gowid.IRenderFlowWith); !ok {
 		panic(gowid.WidgetSizeError{Widget: w, Size: size, Required: "gowid.IRenderFlow"})
 	}

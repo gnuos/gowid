@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/vim"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/vim"
 )
 
 //======================================================================
@@ -88,16 +88,16 @@ func New(widgets []gowid.IContainerWidget, opts ...Options) *Widget {
 	return res
 }
 
-//func Simple(ws ...gowid.IWidget) *Widget {
-func NewFlow(ws ...interface{}) *Widget {
+// func Simple(ws ...gowid.IWidget) *Widget {
+func NewFlow(ws ...any) *Widget {
 	return NewWithDim(gowid.RenderFlow{}, ws...)
 }
 
-func NewFixed(ws ...interface{}) *Widget {
+func NewFixed(ws ...any) *Widget {
 	return NewWithDim(gowid.RenderFixed{}, ws...)
 }
 
-func NewWithDim(method gowid.IWidgetDimension, ws ...interface{}) *Widget {
+func NewWithDim(method gowid.IWidgetDimension, ws ...any) *Widget {
 	cws := make([]gowid.IContainerWidget, len(ws))
 	for i := 0; i < len(ws); i++ {
 		if cw, ok := ws[i].(gowid.IContainerWidget); ok {
@@ -189,7 +189,7 @@ func (w *Widget) FindNextSelectable(dir gowid.Direction, wrap bool) (int, bool) 
 	return gowid.FindNextSelectableFrom(w, w.Focus(), dir, wrap)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -211,7 +211,6 @@ func (w *Widget) RenderSubWidgets(size gowid.IRenderSize, focus gowid.Selector, 
 	return RenderSubwidgets(w, size, focus, focusIdx, app)
 }
 
-//
 // TODO - widen each line to same width
 // gcdoc - the fn argument is used to return either canvases or sizes, depending on whether
 // the caller is rendering, or rendering subsizes
@@ -268,7 +267,7 @@ func (w *Widget) KeyIsDown(evk *tcell.EventKey) bool {
 
 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 
 	subfocus := w.Focus()
 	// An array of IRenderBoxes
@@ -424,7 +423,7 @@ func RenderSize(w gowid.ICompositeMultipleWidget, size gowid.IRenderSize, focus 
 		maxrow = gwutil.Min(maxrow, sz.BoxRows())
 	}
 
-	return gowid.RenderBox{maxcol, maxrow}
+	return gowid.RenderBox{C: maxcol, R: maxrow}
 }
 
 // Heights can be:
@@ -527,7 +526,7 @@ func RenderBoxMaker(w IWidget, size gowid.IRenderSize, focus gowid.Selector, foc
 			if _, ok := ww.(gowid.IRenderWithWeight); ok {
 				weightWidgets++
 				if weightWidgets > 1 {
-					panic(fmt.Errorf("Pile is rendered as Flow/Fixed %v of type %T so cannot contain more than one Weight widget",
+					panic(fmt.Errorf("pile is rendered as Flow/Fixed %v of type %T so cannot contain more than one Weight widget",
 						size, size))
 				}
 			}
@@ -585,7 +584,7 @@ func RenderBoxMaker(w IWidget, size gowid.IRenderSize, focus gowid.Selector, foc
 				rowsUsed += heights[i]
 			} else {
 				if w2, ok := dims[i].(gowid.IRenderWithWeight); !ok {
-					panic(fmt.Errorf("Unsupported dimension %T of type %T for widget %v - %v",
+					panic(fmt.Errorf("unsupported dimension %T of type %T for widget %v - %v",
 						dims[i], dims[i], subs[i], err))
 				} else {
 					// It must be weighted

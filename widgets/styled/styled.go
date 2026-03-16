@@ -8,7 +8,7 @@ package styled
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
+	"github.com/gnuos/gowid"
 )
 
 //======================================================================
@@ -105,7 +105,7 @@ func (w *Widget) RenderSize(size gowid.IRenderSize, focus gowid.Selector, app go
 	return w.SubWidget().RenderSize(size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return gowid.UserInputIfSelectable(w.IWidget, ev, size, focus, app)
 }
 
@@ -128,39 +128,37 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	y := canvas.BoxRows()
 	max := x * y
 
-	if attrSpecs != nil {
-		for _, attr := range attrSpecs {
-			// TODO - bounds checks
-			if attr.Styler != nil {
-				f, b, s := attr.Styler.GetStyle(app)
-				for i := attr.Start; true; i++ {
-					if attr.End != -1 && i == attr.End {
-						break
-					}
-					if i == max {
-						break
-					}
-					col, row := i%cols, i/cols
-
-					c := canvas.CellAt(col, row)
-					c2 := c
-
-					if f != nil {
-						f1 = gowid.IColorToTCell(f, gowid.ColorNone, app.GetColorMode())
-						c = c.WithForegroundColor(f1)
-					}
-					if b != nil {
-						b1 = gowid.IColorToTCell(b, gowid.ColorNone, app.GetColorMode())
-						c = c.WithBackgroundColor(b1)
-					}
-
-					if !w.options.OverWrite {
-						c = c.WithStyle(s).MergeDisplayAttrsUnder(c2)
-					} else {
-						c = c2.MergeDisplayAttrsUnder(c.WithStyle(s))
-					}
-					canvas.SetCellAt(col, row, c)
+	for _, attr := range attrSpecs {
+		// TODO - bounds checks
+		if attr.Styler != nil {
+			f, b, s := attr.Styler.GetStyle(app)
+			for i := attr.Start; true; i++ {
+				if attr.End != -1 && i == attr.End {
+					break
 				}
+				if i == max {
+					break
+				}
+				col, row := i%cols, i/cols
+
+				c := canvas.CellAt(col, row)
+				c2 := c
+
+				if f != nil {
+					f1 = gowid.IColorToTCell(f, gowid.ColorNone, app.GetColorMode())
+					c = c.WithForegroundColor(f1)
+				}
+				if b != nil {
+					b1 = gowid.IColorToTCell(b, gowid.ColorNone, app.GetColorMode())
+					c = c.WithBackgroundColor(b1)
+				}
+
+				if !w.options.OverWrite {
+					c = c.WithStyle(s).MergeDisplayAttrsUnder(c2)
+				} else {
+					c = c2.MergeDisplayAttrsUnder(c.WithStyle(s))
+				}
+				canvas.SetCellAt(col, row, c)
 			}
 		}
 	}

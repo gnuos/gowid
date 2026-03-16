@@ -9,9 +9,9 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/fill"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/fill"
 	"github.com/guptarohit/asciigraph"
 )
 

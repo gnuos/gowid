@@ -11,13 +11,14 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"maps"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
 	"github.com/mattn/go-runewidth"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/text/encoding/charmap"
@@ -120,7 +121,7 @@ type RegularCSICommand struct {
 func (c RegularCSICommand) MinArgs() int     { return c.minArgs }
 func (c RegularCSICommand) FallbackArg() int { return c.fallbackArg }
 func (c RegularCSICommand) IsAlias() bool    { return false }
-func (c RegularCSICommand) Alias() byte      { panic(errors.New("Do not call")) }
+func (c RegularCSICommand) Alias() byte      { panic(errors.New("do not call")) }
 func (c RegularCSICommand) Call(canvas *Canvas, args []int, qmark bool) bool {
 	return c.fn(canvas, args, qmark)
 }
@@ -129,12 +130,12 @@ type AliasCSICommand struct {
 	alias byte
 }
 
-func (c AliasCSICommand) MinArgs() int     { panic(errors.New("Do not call")) }
-func (c AliasCSICommand) FallbackArg() int { panic(errors.New("Do not call")) }
+func (c AliasCSICommand) MinArgs() int     { panic(errors.New("do not call")) }
+func (c AliasCSICommand) FallbackArg() int { panic(errors.New("do not call")) }
 func (c AliasCSICommand) IsAlias() bool    { return true }
 func (c AliasCSICommand) Alias() byte      { return c.alias }
 func (c AliasCSICommand) Call(canvas *Canvas, args []int, qmark bool) bool {
-	panic(errors.New("Do not call"))
+	panic(errors.New("do not call"))
 }
 
 type CSIMap map[byte]ICSICommand
@@ -399,7 +400,7 @@ func (p parseState) String() string {
 	case ignoreState:
 		return "ignore"
 	default:
-		panic(fmt.Errorf("Invalid parse state: %d", int(p)))
+		panic(fmt.Errorf("invalid parse state: %d", int(p)))
 	}
 }
 
@@ -461,25 +462,20 @@ func (c *Canvas) Duplicate() gowid.ICanvas {
 	*res = *c
 	res.ViewPortCanvas = c.ViewPortCanvas.Duplicate().(*ViewPortCanvas)
 	res.savedstyles = make(map[string]bool)
-	for k, v := range c.savedstyles {
-		res.savedstyles[k] = v
-	}
+	maps.Copy(res.savedstyles, c.savedstyles)
+
 	res.styles = make(map[string]bool)
-	for k, v := range c.styles {
-		res.styles[k] = v
-	}
+	maps.Copy(res.styles, c.styles)
+
 	res.tabstops = make([]int, len(c.tabstops))
-	for i, v := range res.tabstops {
-		res.tabstops[i] = v
-	}
+	copy(res.tabstops, c.tabstops)
+
 	res.escbuf = make([]byte, len(c.escbuf))
-	for i, v := range res.escbuf {
-		res.escbuf[i] = v
-	}
+	copy(res.escbuf, c.escbuf)
+
 	res.utf8Buffer = make([]byte, len(c.utf8Buffer))
-	for i, v := range res.utf8Buffer {
-		res.utf8Buffer[i] = v
-	}
+	copy(res.utf8Buffer, c.utf8Buffer)
+
 	return res
 }
 
@@ -1181,7 +1177,7 @@ func (c *Canvas) SGIToAttribs(args []int, fg, bg gwutil.IntOption, styles map[st
 		case 40 <= attr && attr <= 47:
 			bg = gwutil.SomeInt(attr + 1 - 40)
 		case 100 <= attr && attr <= 107:
-			bg = gwutil.SomeInt(attr - 100 + 9) // 8 basic colors -> right index into tcell array
+			bg = gwutil.SomeInt(attr - 100 + 9) // 8 basic colors -> right index into array
 		case attr == 23:
 			// TODO vim sends this
 		case attr == 38:
@@ -1328,10 +1324,8 @@ func (c *Canvas) MakeCellFrom(r rune) gowid.Cell {
 		cell = cell.WithBackgroundColor(gowid.MakeTCellColorExt(tcell.Color(c.bg.Val()-1) + tcell.ColorValid))
 	}
 	if len(c.styles) > 0 {
-		for k, _ := range c.styles {
+		for k := range c.styles {
 			switch k {
-			case "underline":
-				cell = cell.WithStyle(gowid.StyleUnderline)
 			case "bold":
 				cell = cell.WithStyle(gowid.StyleBold)
 			case "reverse":
@@ -1521,7 +1515,7 @@ func (c *Canvas) ParseCSIExt(r byte) bool {
 		for len(numbuf) < cmd.MinArgs() {
 			numbuf = append(numbuf, cmd.FallbackArg())
 		}
-		for i, _ := range numbuf {
+		for i := range numbuf {
 			if numbuf[i] == 0 {
 				// TODO fishy...
 				numbuf[i] = cmd.FallbackArg()

@@ -10,13 +10,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/fill"
-	"github.com/gcla/gowid/widgets/selectable"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/fill"
+	"github.com/gnuos/gowid/widgets/selectable"
+	"github.com/gnuos/gowid/widgets/text"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -44,7 +44,7 @@ func (t MyTable) HeaderWidgets() []gowid.IWidget {
 	return nil
 }
 
-func (t MyTable) CellWidgets(row RowId) []gowid.IWidget {
+func (t MyTable) CellWidgets(row RowID) []gowid.IWidget {
 	if row >= 0 && int(row) < t.Rows() {
 		return t.rows[int(row)]
 	} else {
@@ -56,8 +56,8 @@ func (t MyTable) Comparators() []ICompare {
 	return nil
 }
 
-func (t MyTable) RowIdentifier(row int) (RowId, bool) {
-	return RowId(row), true
+func (t MyTable) RowIdentifier(row int) (RowID, bool) {
+	return RowID(row), true
 }
 
 type MyTableWithHeader struct {

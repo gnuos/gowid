@@ -6,12 +6,12 @@
 package gowid
 
 import (
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
 
-func tcellScreen(tty string) (tcell.Screen, error) {
+func tcellScreen(_ string) (tcell.Screen, error) {
 	return tcell.NewScreen()
 }
 

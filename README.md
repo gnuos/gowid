@@ -30,30 +30,6 @@ Make sure `$GOPATH/bin` is in your PATH (or `~/go/bin` if `GOPATH` isn't set), t
 gowid-fib
 ```
 
-Here is a port of urwid's [palette](https://github.com/urwid/urwid/blob/master/examples/palette_test.py) example:
-
-<a href="https://drive.google.com/uc?export=view&id=1wENPAEOOdPp6eeHvpH0TvYOYnl4Gmy9Q"><img src="https://drive.google.com/uc?export=view&id=1wENPAEOOdPp6eeHvpH0TvYOYnl4Gmy9Q" style="width: 50px; max-width: 10%; height: auto" title="Click for the larger version." /></a>
-
-Here is urwid's [graph](https://github.com/urwid/urwid/blob/master/examples/graph.py) example:
-
-<a href="https://drive.google.com/uc?export=view&id=16p1NFrc3X3ReD-wz7bPXeYF8pCap3U-y"><img src="https://drive.google.com/uc?export=view&id=16p1NFrc3X3ReD-wz7bPXeYF8pCap3U-y" style="width: 50px; max-width: 10%; height: auto" title="Click for the larger version." /></a>
-
-And urwid's [fibonacci](https://github.com/urwid/urwid/blob/master/examples/fib.py) example:
-
-<a href="https://drive.google.com/uc?export=view&id=1fPVYOWt7EMUP18ZQL78OFY7IXwmeeqUO"><img src="https://drive.google.com/uc?export=view&id=1fPVYOWt7EMUP18ZQL78OFY7IXwmeeqUO" style="width: 500px; max-width: 100%; height: auto" title="Click for the larger version." /></a>
-
-A demonstration of gowid's terminal widget, a port of urwid's [terminal widget](https://github.com/urwid/urwid/blob/master/examples/terminal.py):
-
-<a href="https://drive.google.com/uc?export=view&id=1bRtgHoXcy0UESmKZK6JID8FIlkf5T7aL"><img src="https://drive.google.com/uc?export=view&id=1bRtgHoXcy0UESmKZK6JID8FIlkf5T7aL" style="width: 500px; max-width: 100%; height: auto" title="Click for the larger version." /></a>
-
-Finally, here is an animation of termshark in action:
-
-<a href="https://drive.google.com/uc?export=view&id=1vDecxjqwJrtMGJjOObL-LLvi-1pBVByt"><img src="https://drive.google.com/uc?export=view&id=1vDecxjqwJrtMGJjOObL-LLvi-1pBVByt" style="width: 500px; max-width: 100%; height: auto" title="Click for the larger version." /></a>
-
-## Hello World
-
-This example is an attempt to mimic urwid's ["Hello World"](http://urwid.org/tutorial/index.html) example.
-
 ```go
 package main
 
@@ -69,7 +45,6 @@ import (
 //======================================================================
 
 func main() {
-
 	palette := gowid.Palette{
 		"banner":  gowid.MakePaletteEntry(gowid.ColorWhite, gowid.MakeRGBColor("#60d")),
 		"streak":  gowid.MakePaletteEntry(gowid.ColorNone, gowid.MakeRGBColor("#60a")),
@@ -118,10 +93,6 @@ func main() {
 	app.SimpleMainLoop()
 }
 ```
-
-Running the example above displays this:
-
-<a href="https://drive.google.com/uc?export=view&id=1P2kjWagHJmhtWLV0hPQti0fXKidr_WMB"><img src="https://drive.google.com/uc?export=view&id=1P2kjWagHJmhtWLV0hPQti0fXKidr_WMB" style="width: 500px; max-width: 100%; height: auto" title="Click for the larger version." /></a>
 
 ## Documentation
 

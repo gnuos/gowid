@@ -8,10 +8,10 @@ package list
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/vim"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/vim"
 	"github.com/pkg/errors"
 )
 
@@ -73,7 +73,7 @@ type IWalkerEnd interface {
 //======================================================================
 
 type WidgetIsUnboundedError struct {
-	Type interface{}
+	Type any
 }
 
 var _ error = WidgetIsUnboundedError{}
@@ -82,7 +82,7 @@ func (e WidgetIsUnboundedError) Error() string {
 	return fmt.Sprintf("Widget does not use IBoundedWalker - %v of type %T", e.Type, e.Type)
 }
 
-var BadState = fmt.Errorf("Broken state in list widget")
+var ErrBadState = fmt.Errorf("broken state in list widget")
 
 //======================================================================
 
@@ -282,13 +282,13 @@ func (w *IndexedWidget) SetWalker(l IWalker, app gowid.IApp) {
 	w.Widget.SetWalker(l, app)
 }
 
-func (w *Widget) State() interface{} {
+func (w *Widget) State() any {
 	return w.st
 }
 
-func (w *Widget) SetState(st interface{}, app gowid.IApp) {
+func (w *Widget) SetState(st any, app gowid.IApp) {
 	if state, ok := st.(state); !ok {
-		panic(BadState)
+		panic(ErrBadState)
 	} else {
 		w.st = state
 	}
@@ -395,7 +395,7 @@ func (w *Widget) RenderSubwidgets(size gowid.IRenderSize, focus gowid.Selector, 
 			c = curToRender.Render(gowid.RenderFixed{}, focus.SelectIf(w.SelectChild(focus)), app)
 		}
 		creallines := c.BoxRows()
-		middle = SubRenders{curWidget, curPos, c, creallines}
+		// middle = SubRenders{curWidget, curPos, c, creallines}
 
 		// If the focus widget just rendered has more rows than the required size provided, then...
 		if haveLinesNeeded && (c.BoxRows() > linesNeeded) {
@@ -588,7 +588,7 @@ func setPrefPosition(app gowid.IApp, curw gowid.IWidget, prefCol int) {
 	}
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := false
 	rows, haveRows := size.(gowid.IRows)
 	cols, haveCols := size.(gowid.IColumns)
@@ -779,7 +779,7 @@ func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.S
 			res = true
 		case tcell.ButtonNone:
 			if childSelectable {
-				// tcell will report ButtonNone for mouse events which are simply pointer movements
+				// will report ButtonNone for mouse events which are simply pointer movements
 				// (at least in my terminal). To distinguish this from a mouse release event, we track
 				// the prior input's mouse state. If the last state was a mouse click, then this event
 				// is processed as a mouse button release.
@@ -816,7 +816,7 @@ func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.S
 							} else if dirMoved < 0 {
 								res, curPosition = w.MoveToPreviousFocus(subRenderSize, focus, numLinesToUse, app)
 							} else {
-								panic(BadState)
+								panic(ErrBadState)
 							}
 							if !res {
 								w.st = saveState

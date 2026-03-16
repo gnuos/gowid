@@ -8,54 +8,21 @@ package terminal
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
-	"github.com/gdamore/tcell/v2/terminfo"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
 	log "github.com/sirupsen/logrus"
 )
 
 //======================================================================
 
 type EventNotSupported struct {
-	Event interface{}
+	Event any
 }
 
 var _ error = EventNotSupported{}
 
 func (e EventNotSupported) Error() string {
 	return fmt.Sprintf("Terminal input event %v of type %T not supported yet", e.Event, e.Event)
-}
-
-func pasteStart(ti *terminfo.Terminfo) []byte {
-	if ti.PasteStart != "" {
-		return []byte(ti.PasteStart)
-	} else {
-		return []byte("\x1b[200~")
-	}
-}
-
-func pasteEnd(ti *terminfo.Terminfo) []byte {
-	if ti.PasteEnd != "" {
-		return []byte(ti.PasteEnd)
-	} else {
-		return []byte("\x1b[201~")
-	}
-}
-
-func enablePaste(ti *terminfo.Terminfo) []byte {
-	if ti.EnablePaste != "" {
-		return []byte(ti.EnablePaste)
-	} else {
-		return []byte("\x1b[?2004h")
-	}
-}
-
-func disablePaste(ti *terminfo.Terminfo) []byte {
-	if ti.DisablePaste != "" {
-		return []byte(ti.DisablePaste)
-	} else {
-		return []byte("\x1b[?2004l")
-	}
 }
 
 // TCellEventToBytes converts TCell's representation of a terminal event to
@@ -66,7 +33,7 @@ func disablePaste(ti *terminfo.Terminfo) []byte {
 // subprocess is connected to a tty controlled by gowid. Events from the
 // user are parsed by gowid via TCell - they are then translated by this
 // function before being written to the TerminalWidget subprocess's tty.
-func TCellEventToBytes(ev interface{}, mouse IMouseSupport, last gowid.MouseState, paster IPaste, ti *terminfo.Terminfo) ([]byte, bool) {
+func TCellEventToBytes(ev any, mouse IMouseSupport, last gowid.MouseState, paster IPaste) ([]byte, bool) {
 	res := make([]byte, 0)
 	res2 := false
 
@@ -75,10 +42,10 @@ func TCellEventToBytes(ev interface{}, mouse IMouseSupport, last gowid.MouseStat
 		res2 = true
 		if paster.PasteState() {
 			// Already saw start
-			res = append(res, pasteEnd(ti)...)
+			res = append(res, []byte("\x1b[200~")...)
 			paster.PasteState(false)
 		} else {
-			res = append(res, pasteStart(ti)...)
+			res = append(res, []byte("\x1b[200~")...)
 			paster.PasteState(true)
 		}
 	case *tcell.EventKey:
@@ -90,175 +57,257 @@ func TCellEventToBytes(ev interface{}, mouse IMouseSupport, last gowid.MouseStat
 			res2 = true
 			switch ev.Key() {
 			case tcell.KeyRune:
-				str := []rune{ev.Rune()}
+				str := []rune(ev.Str())
 				res = append(res, string(str)...)
 			case tcell.KeyCR:
 				str := []rune{rune(tcell.KeyCR)}
 				res = append(res, string(str)...)
 			case tcell.KeyF1:
-				res = append(res, ti.KeyF1...)
+				str := []rune{rune(tcell.KeyF1)}
+				res = append(res, string(str)...)
 			case tcell.KeyF2:
-				res = append(res, ti.KeyF2...)
+				str := []rune{rune(tcell.KeyF2)}
+				res = append(res, string(str)...)
 			case tcell.KeyF3:
-				res = append(res, ti.KeyF3...)
+				str := []rune{rune(tcell.KeyF3)}
+				res = append(res, string(str)...)
 			case tcell.KeyF4:
-				res = append(res, ti.KeyF4...)
+				str := []rune{rune(tcell.KeyF4)}
+				res = append(res, string(str)...)
 			case tcell.KeyF5:
-				res = append(res, ti.KeyF5...)
+				str := []rune{rune(tcell.KeyF5)}
+				res = append(res, string(str)...)
 			case tcell.KeyF6:
-				res = append(res, ti.KeyF6...)
+				str := []rune{rune(tcell.KeyF6)}
+				res = append(res, string(str)...)
 			case tcell.KeyF7:
-				res = append(res, ti.KeyF7...)
+				str := []rune{rune(tcell.KeyF7)}
+				res = append(res, string(str)...)
 			case tcell.KeyF8:
-				res = append(res, ti.KeyF8...)
+				str := []rune{rune(tcell.KeyF8)}
+				res = append(res, string(str)...)
 			case tcell.KeyF9:
-				res = append(res, ti.KeyF9...)
+				str := []rune{rune(tcell.KeyF9)}
+				res = append(res, string(str)...)
 			case tcell.KeyF10:
-				res = append(res, ti.KeyF10...)
+				str := []rune{rune(tcell.KeyF10)}
+				res = append(res, string(str)...)
 			case tcell.KeyF11:
-				res = append(res, ti.KeyF11...)
+				str := []rune{rune(tcell.KeyF11)}
+				res = append(res, string(str)...)
 			case tcell.KeyF12:
-				res = append(res, ti.KeyF12...)
+				str := []rune{rune(tcell.KeyF12)}
+				res = append(res, string(str)...)
 			case tcell.KeyF13:
-				res = append(res, ti.KeyF13...)
+				str := []rune{rune(tcell.KeyF13)}
+				res = append(res, string(str)...)
 			case tcell.KeyF14:
-				res = append(res, ti.KeyF14...)
+				str := []rune{rune(tcell.KeyF14)}
+				res = append(res, string(str)...)
 			case tcell.KeyF15:
-				res = append(res, ti.KeyF15...)
+				str := []rune{rune(tcell.KeyF15)}
+				res = append(res, string(str)...)
 			case tcell.KeyF16:
-				res = append(res, ti.KeyF16...)
+				str := []rune{rune(tcell.KeyF16)}
+				res = append(res, string(str)...)
 			case tcell.KeyF17:
-				res = append(res, ti.KeyF17...)
+				str := []rune{rune(tcell.KeyF17)}
+				res = append(res, string(str)...)
 			case tcell.KeyF18:
-				res = append(res, ti.KeyF18...)
+				str := []rune{rune(tcell.KeyF18)}
+				res = append(res, string(str)...)
 			case tcell.KeyF19:
-				res = append(res, ti.KeyF19...)
+				str := []rune{rune(tcell.KeyF19)}
+				res = append(res, string(str)...)
 			case tcell.KeyF20:
-				res = append(res, ti.KeyF20...)
+				str := []rune{rune(tcell.KeyF20)}
+				res = append(res, string(str)...)
 			case tcell.KeyF21:
-				res = append(res, ti.KeyF21...)
+				str := []rune{rune(tcell.KeyF21)}
+				res = append(res, string(str)...)
 			case tcell.KeyF22:
-				res = append(res, ti.KeyF22...)
+				str := []rune{rune(tcell.KeyF22)}
+				res = append(res, string(str)...)
 			case tcell.KeyF23:
-				res = append(res, ti.KeyF23...)
+				str := []rune{rune(tcell.KeyF23)}
+				res = append(res, string(str)...)
 			case tcell.KeyF24:
-				res = append(res, ti.KeyF24...)
+				str := []rune{rune(tcell.KeyF24)}
+				res = append(res, string(str)...)
 			case tcell.KeyF25:
-				res = append(res, ti.KeyF25...)
+				str := []rune{rune(tcell.KeyF25)}
+				res = append(res, string(str)...)
 			case tcell.KeyF26:
-				res = append(res, ti.KeyF26...)
+				str := []rune{rune(tcell.KeyF26)}
+				res = append(res, string(str)...)
 			case tcell.KeyF27:
-				res = append(res, ti.KeyF27...)
+				str := []rune{rune(tcell.KeyF27)}
+				res = append(res, string(str)...)
 			case tcell.KeyF28:
-				res = append(res, ti.KeyF28...)
+				str := []rune{rune(tcell.KeyF28)}
+				res = append(res, string(str)...)
 			case tcell.KeyF29:
-				res = append(res, ti.KeyF29...)
+				str := []rune{rune(tcell.KeyF29)}
+				res = append(res, string(str)...)
 			case tcell.KeyF30:
-				res = append(res, ti.KeyF30...)
+				str := []rune{rune(tcell.KeyF30)}
+				res = append(res, string(str)...)
 			case tcell.KeyF31:
-				res = append(res, ti.KeyF31...)
+				str := []rune{rune(tcell.KeyF31)}
+				res = append(res, string(str)...)
 			case tcell.KeyF32:
-				res = append(res, ti.KeyF32...)
+				str := []rune{rune(tcell.KeyF32)}
+				res = append(res, string(str)...)
 			case tcell.KeyF33:
-				res = append(res, ti.KeyF33...)
+				str := []rune{rune(tcell.KeyF33)}
+				res = append(res, string(str)...)
 			case tcell.KeyF34:
-				res = append(res, ti.KeyF34...)
+				str := []rune{rune(tcell.KeyF34)}
+				res = append(res, string(str)...)
 			case tcell.KeyF35:
-				res = append(res, ti.KeyF35...)
+				str := []rune{rune(tcell.KeyF35)}
+				res = append(res, string(str)...)
 			case tcell.KeyF36:
-				res = append(res, ti.KeyF36...)
+				str := []rune{rune(tcell.KeyF36)}
+				res = append(res, string(str)...)
 			case tcell.KeyF37:
-				res = append(res, ti.KeyF37...)
+				str := []rune{rune(tcell.KeyF37)}
+				res = append(res, string(str)...)
 			case tcell.KeyF38:
-				res = append(res, ti.KeyF38...)
+				str := []rune{rune(tcell.KeyF38)}
+				res = append(res, string(str)...)
 			case tcell.KeyF39:
-				res = append(res, ti.KeyF39...)
+				str := []rune{rune(tcell.KeyF39)}
+				res = append(res, string(str)...)
 			case tcell.KeyF40:
-				res = append(res, ti.KeyF40...)
+				str := []rune{rune(tcell.KeyF40)}
+				res = append(res, string(str)...)
 			case tcell.KeyF41:
-				res = append(res, ti.KeyF41...)
+				str := []rune{rune(tcell.KeyF41)}
+				res = append(res, string(str)...)
 			case tcell.KeyF42:
-				res = append(res, ti.KeyF42...)
+				str := []rune{rune(tcell.KeyF42)}
+				res = append(res, string(str)...)
 			case tcell.KeyF43:
-				res = append(res, ti.KeyF43...)
+				str := []rune{rune(tcell.KeyF43)}
+				res = append(res, string(str)...)
 			case tcell.KeyF44:
-				res = append(res, ti.KeyF44...)
+				str := []rune{rune(tcell.KeyF44)}
+				res = append(res, string(str)...)
 			case tcell.KeyF45:
-				res = append(res, ti.KeyF45...)
+				str := []rune{rune(tcell.KeyF45)}
+				res = append(res, string(str)...)
 			case tcell.KeyF46:
-				res = append(res, ti.KeyF46...)
+				str := []rune{rune(tcell.KeyF46)}
+				res = append(res, string(str)...)
 			case tcell.KeyF47:
-				res = append(res, ti.KeyF47...)
+				str := []rune{rune(tcell.KeyF47)}
+				res = append(res, string(str)...)
 			case tcell.KeyF48:
-				res = append(res, ti.KeyF48...)
+				str := []rune{rune(tcell.KeyF48)}
+				res = append(res, string(str)...)
 			case tcell.KeyF49:
-				res = append(res, ti.KeyF49...)
+				str := []rune{rune(tcell.KeyF49)}
+				res = append(res, string(str)...)
 			case tcell.KeyF50:
-				res = append(res, ti.KeyF50...)
+				str := []rune{rune(tcell.KeyF50)}
+				res = append(res, string(str)...)
 			case tcell.KeyF51:
-				res = append(res, ti.KeyF51...)
+				str := []rune{rune(tcell.KeyF51)}
+				res = append(res, string(str)...)
 			case tcell.KeyF52:
-				res = append(res, ti.KeyF52...)
+				str := []rune{rune(tcell.KeyF52)}
+				res = append(res, string(str)...)
 			case tcell.KeyF53:
-				res = append(res, ti.KeyF53...)
+				str := []rune{rune(tcell.KeyF53)}
+				res = append(res, string(str)...)
 			case tcell.KeyF54:
-				res = append(res, ti.KeyF54...)
+				str := []rune{rune(tcell.KeyF54)}
+				res = append(res, string(str)...)
 			case tcell.KeyF55:
-				res = append(res, ti.KeyF55...)
+				str := []rune{rune(tcell.KeyF55)}
+				res = append(res, string(str)...)
 			case tcell.KeyF56:
-				res = append(res, ti.KeyF56...)
+				str := []rune{rune(tcell.KeyF56)}
+				res = append(res, string(str)...)
 			case tcell.KeyF57:
-				res = append(res, ti.KeyF57...)
+				str := []rune{rune(tcell.KeyF57)}
+				res = append(res, string(str)...)
 			case tcell.KeyF58:
-				res = append(res, ti.KeyF58...)
+				str := []rune{rune(tcell.KeyF58)}
+				res = append(res, string(str)...)
 			case tcell.KeyF59:
-				res = append(res, ti.KeyF59...)
+				str := []rune{rune(tcell.KeyF59)}
+				res = append(res, string(str)...)
 			case tcell.KeyF60:
-				res = append(res, ti.KeyF60...)
+				str := []rune{rune(tcell.KeyF60)}
+				res = append(res, string(str)...)
 			case tcell.KeyF61:
-				res = append(res, ti.KeyF61...)
+				str := []rune{rune(tcell.KeyF61)}
+				res = append(res, string(str)...)
 			case tcell.KeyF62:
-				res = append(res, ti.KeyF62...)
+				str := []rune{rune(tcell.KeyF62)}
+				res = append(res, string(str)...)
 			case tcell.KeyF63:
-				res = append(res, ti.KeyF63...)
+				str := []rune{rune(tcell.KeyF63)}
+				res = append(res, string(str)...)
 			case tcell.KeyF64:
-				res = append(res, ti.KeyF64...)
+				str := []rune{rune(tcell.KeyF64)}
+				res = append(res, string(str)...)
 			case tcell.KeyInsert:
-				res = append(res, ti.KeyInsert...)
+				str := []rune{rune(tcell.KeyInsert)}
+				res = append(res, string(str)...)
 			case tcell.KeyDelete:
-				res = append(res, ti.KeyDelete...)
+				str := []rune{rune(tcell.KeyDelete)}
+				res = append(res, string(str)...)
 			case tcell.KeyHome:
-				res = append(res, ti.KeyHome...)
+				str := []rune{rune(tcell.KeyHome)}
+				res = append(res, string(str)...)
 			case tcell.KeyEnd:
-				res = append(res, ti.KeyEnd...)
+				str := []rune{rune(tcell.KeyEnd)}
+				res = append(res, string(str)...)
 			case tcell.KeyHelp:
-				res = append(res, ti.KeyHelp...)
+				str := []rune{rune(tcell.KeyHelp)}
+				res = append(res, string(str)...)
 			case tcell.KeyPgUp:
-				res = append(res, ti.KeyPgUp...)
+				str := []rune{rune(tcell.KeyPgUp)}
+				res = append(res, string(str)...)
 			case tcell.KeyPgDn:
-				res = append(res, ti.KeyPgDn...)
+				str := []rune{rune(tcell.KeyPgDn)}
+				res = append(res, string(str)...)
 			case tcell.KeyUp:
-				res = append(res, ti.KeyUp...)
+				str := []rune{rune(tcell.KeyUp)}
+				res = append(res, string(str)...)
 			case tcell.KeyDown:
-				res = append(res, ti.KeyDown...)
+				str := []rune{rune(tcell.KeyDown)}
+				res = append(res, string(str)...)
 			case tcell.KeyLeft:
-				res = append(res, ti.KeyLeft...)
+				str := []rune{rune(tcell.KeyLeft)}
+				res = append(res, string(str)...)
 			case tcell.KeyRight:
-				res = append(res, ti.KeyRight...)
+				str := []rune{rune(tcell.KeyRight)}
+				res = append(res, string(str)...)
 			case tcell.KeyBacktab:
-				res = append(res, ti.KeyBacktab...)
+				str := []rune{rune(tcell.KeyBacktab)}
+				res = append(res, string(str)...)
 			case tcell.KeyExit:
-				res = append(res, ti.KeyExit...)
+				str := []rune{rune(tcell.KeyExit)}
+				res = append(res, string(str)...)
 			case tcell.KeyClear:
-				res = append(res, ti.KeyClear...)
+				str := []rune{rune(tcell.KeyClear)}
+				res = append(res, string(str)...)
 			case tcell.KeyPrint:
-				res = append(res, ti.KeyPrint...)
+				str := []rune{rune(tcell.KeyPrint)}
+				res = append(res, string(str)...)
 			case tcell.KeyCancel:
-				res = append(res, ti.KeyCancel...)
+				str := []rune{rune(tcell.KeyCancel)}
+				res = append(res, string(str)...)
 			case tcell.KeyDEL:
-				res = append(res, ti.KeyBackspace...)
+				str := []rune{rune(tcell.KeyBackspace)}
+				res = append(res, string(str)...)
 			case tcell.KeyBackspace:
-				res = append(res, ti.KeyBackspace...)
+				str := []rune{rune(tcell.KeyBackspace)}
+				res = append(res, string(str)...)
 			default:
 				res2 = false
 				panic(EventNotSupported{Event: ev})
@@ -336,9 +385,3 @@ func TCellEventToBytes(ev interface{}, mouse IMouseSupport, last gowid.MouseStat
 	}
 	return res, res2
 }
-
-//======================================================================
-// Local Variables:
-// mode: Go
-// fill-column: 110
-// End:

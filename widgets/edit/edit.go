@@ -11,10 +11,10 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/text"
 	"github.com/pkg/errors"
 )
 
@@ -136,7 +136,7 @@ func New(args ...Options) *Widget {
 }
 
 func (w *Widget) String() string {
-	return fmt.Sprintf("edit")
+	return "edit"
 }
 
 func (w *Widget) IsReadOnly() bool {
@@ -187,7 +187,7 @@ func (w *Widget) ChrAt(i int) rune {
 		}
 		j++
 	}
-	panic(errors.WithStack(gowid.WithKVs(InvalidRuneIndex, map[string]interface{}{"index": i, "text": w.text})))
+	panic(errors.WithStack(gowid.WithKVs(InvalidRuneIndex, map[string]any{"index": i, "text": w.text})))
 }
 
 func (w *Widget) SetText(text string, app gowid.IApp) {
@@ -216,7 +216,7 @@ func (w *Widget) SetCaption(text string, app gowid.IApp) {
 	gowid.RunWidgetCallbacks(w.Callbacks, Caption{}, app, w)
 }
 
-//func (w *Widget) PasteState(b ...bool) []*tcell.EventKey {
+// func (w *Widget) PasteState(b ...bool) []*tcell.EventKey {
 func (w *Widget) PasteState(b ...bool) bool {
 	if len(b) > 0 {
 		w.paste = b[0]
@@ -293,7 +293,7 @@ func (w *Widget) MakeText() text.IWidget {
 	return MakeText(w)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -335,9 +335,9 @@ func MakeText(w IWidget) text.IWidget {
 	tw := text.New(txt)
 	tw.SetLinesFromTop(w.LinesFromTop(), nil)
 
-	cu := &text.SimpleCursor{-1}
+	cu := &text.SimpleCursor{Pos: -1}
 	cu.SetCursorPos(w.CursorPos()+utf8.RuneCountInString(w.Caption()), nil)
-	twc := &text.WidgetWithCursor{tw, cu}
+	twc := &text.WidgetWithCursor{Widget: tw, SimpleCursor: cu}
 
 	return twc
 }
@@ -436,7 +436,7 @@ func keyIsPasteable(ev *tcell.EventKey) bool {
 	}
 }
 
-func isReadOnly(w interface{}) bool {
+func isReadOnly(w any) bool {
 	readOnly := false
 	if ro, ok := w.(IReadOnly); ok {
 		readOnly = ro.IsReadOnly()
@@ -468,7 +468,7 @@ func pasteableKeyInput(w IWidget, ev *tcell.EventKey, size gowid.IRenderSize, fo
 		cpos := w.CursorPos()
 		rhs := make([]rune, len(r)-cpos)
 		copy(rhs, r[cpos:])
-		w.SetText(string(append(append(r[:cpos], ev.Rune()), rhs...)), app)
+		w.SetText(string(append(append(r[:cpos], []rune(ev.Str())...), rhs...)), app)
 		w.SetCursorPos(w.CursorPos()+1, app)
 
 	default:
@@ -478,7 +478,7 @@ func pasteableKeyInput(w IWidget, ev *tcell.EventKey, size gowid.IRenderSize, fo
 	return handled
 }
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	handled := true
 	doup := false
 	dodown := false

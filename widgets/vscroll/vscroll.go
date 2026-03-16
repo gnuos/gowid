@@ -9,9 +9,9 @@ package vscroll
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
 )
 
 //======================================================================
@@ -21,7 +21,7 @@ type VerticalScrollbarRunes struct {
 }
 
 var (
-	VerticalScrollbarAsciiRunes   = VerticalScrollbarRunes{'^', 'v', ' ', '#'}
+	VerticalScrollbarASCIIRunes   = VerticalScrollbarRunes{'^', 'v', ' ', '#'}
 	VerticalScrollbarUnicodeRunes = VerticalScrollbarRunes{'▲', '▼', ' ', '█'}
 )
 
@@ -65,7 +65,7 @@ type Widget struct {
 }
 
 func New() *Widget {
-	return NewWithChars(VerticalScrollbarAsciiRunes)
+	return NewWithChars(VerticalScrollbarASCIIRunes)
 }
 
 func NewUnicode() *Widget {
@@ -146,7 +146,7 @@ func (w *Widget) RenderSize(size gowid.IRenderSize, focus gowid.Selector, app go
 	return RenderSize(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -180,7 +180,7 @@ func (w *Widget) RightClick(frac float32, app gowid.IApp) {
 
 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-func RenderSize(w interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderBox {
+func RenderSize(w any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderBox {
 	cols, haveCols := size.(gowid.IColumns)
 	rows, haveRows := size.(gowid.IRows)
 	switch {
@@ -193,7 +193,7 @@ func RenderSize(w interface{}, size gowid.IRenderSize, focus gowid.Selector, app
 	}
 }
 
-func UserInput(w IVerticalScrollbar, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IVerticalScrollbar, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	if ev2, ok := ev.(*tcell.EventMouse); ok {
 		switch ev2.Buttons() {
 		case tcell.Button1, tcell.Button3:
@@ -309,7 +309,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 	fillArr := make([]gowid.Cell, 0)
 	blank := gowid.CellFromRune(w.GetRunes().Space)
 	blankArr := make([]gowid.Cell, 0)
-	for i := 0; i < cols; i++ {
+	for range cols {
 		fillArr = append(fillArr, fill)
 		blankArr = append(blankArr, blank)
 	}

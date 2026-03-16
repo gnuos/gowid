@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +25,6 @@ func init() {
 }
 
 type testApp struct {
-	doQuit bool
 	gowid.ClickTargets
 	lastMouse gowid.MouseState
 }
@@ -60,7 +59,6 @@ func (d testApp) RangeOverPalette(f func(name string, entry gowid.ICellStyler) b
 }
 
 func (d testApp) Quit() {
-	d.doQuit = true
 }
 
 func (d testApp) Run(f gowid.IAfterRenderEvent) error {
@@ -94,28 +92,28 @@ func (d testApp) InCopyMode(...bool) bool {
 }
 
 func (d testApp) Log(lvl log.Level, msg string, fields ...gowid.LogField) {
-	panic(errors.New("Must not call!"))
+	panic(errors.New("must not call"))
 }
 
 func (d testApp) CopyModeClaimedBy(...gowid.IIdentity) gowid.IIdentity {
-	panic(errors.New("Must not call!"))
+	panic(errors.New("must not call"))
 }
 
-func (d testApp) RefreshCopyMode()                            { panic(errors.New("Must not call!")) }
-func (d testApp) CopyLevel(...int) int                        { panic(errors.New("Must not call!")) }
-func (d testApp) Clips() []gowid.ICopyResult                  { panic(errors.New("Must not call!")) }
-func (d testApp) CopyModeClaimedAt(...int) int                { panic(errors.New("Must not call!")) }
-func (d testApp) RegisterMenu(m gowid.IMenuCompatible)        { panic(errors.New("Must not call!")) }
-func (d testApp) UnregisterMenu(m gowid.IMenuCompatible) bool { panic(errors.New("Must not call!")) }
-func (d testApp) GetLog() log.StdLogger                       { panic(errors.New("Must not call!")) }
-func (d testApp) SetLog(log.StdLogger)                        { panic(errors.New("Must not call!")) }
-func (d testApp) ID() interface{}                             { panic(errors.New("Must not call!")) }
-func (d testApp) GetScreen() tcell.Screen                     { panic(errors.New("Must not call!")) }
-func (d testApp) Redraw()                                     { panic(errors.New("Must not call!")) }
-func (d testApp) Sync()                                       { panic(errors.New("Must not call!")) }
-func (d testApp) SetColorMode(gowid.ColorMode)                { panic(errors.New("Must not call!")) }
-func (d testApp) SetSubWidget(gowid.IWidget, gowid.IApp)      { panic(errors.New("Must not call!")) }
-func (d testApp) SubWidget() gowid.IWidget                    { panic(errors.New("Must not call!")) }
+func (d testApp) RefreshCopyMode()                            { panic(errors.New("must not call")) }
+func (d testApp) CopyLevel(...int) int                        { panic(errors.New("must not call")) }
+func (d testApp) Clips() []gowid.ICopyResult                  { panic(errors.New("must not call")) }
+func (d testApp) CopyModeClaimedAt(...int) int                { panic(errors.New("must not call")) }
+func (d testApp) RegisterMenu(m gowid.IMenuCompatible)        { panic(errors.New("must not call")) }
+func (d testApp) UnregisterMenu(m gowid.IMenuCompatible) bool { panic(errors.New("must not call")) }
+func (d testApp) GetLog() log.StdLogger                       { panic(errors.New("must not call")) }
+func (d testApp) SetLog(log.StdLogger)                        { panic(errors.New("must not call")) }
+func (d testApp) ID() any                                     { panic(errors.New("must not call")) }
+func (d testApp) GetScreen() tcell.Screen                     { panic(errors.New("must not call")) }
+func (d testApp) Redraw()                                     { panic(errors.New("must not call")) }
+func (d testApp) Sync()                                       { panic(errors.New("must not call")) }
+func (d testApp) SetColorMode(gowid.ColorMode)                { panic(errors.New("must not call")) }
+func (d testApp) SetSubWidget(gowid.IWidget, gowid.IApp)      { panic(errors.New("must not call")) }
+func (d testApp) SubWidget() gowid.IWidget                    { panic(errors.New("must not call")) }
 
 //======================================================================
 
@@ -123,11 +121,11 @@ type CheckBoxTester struct {
 	Gotit bool
 }
 
-func (f *CheckBoxTester) Changed(t gowid.IApp, w gowid.IWidget, data ...interface{}) {
+func (f *CheckBoxTester) Changed(t gowid.IApp, w gowid.IWidget, data ...any) {
 	f.Gotit = true
 }
 
-func (f *CheckBoxTester) ID() interface{} { return "foo" }
+func (f *CheckBoxTester) ID() any { return "foo" }
 
 //======================================================================
 
@@ -135,11 +133,11 @@ type ButtonTester struct {
 	Gotit bool
 }
 
-func (f *ButtonTester) Changed(gowid.IApp, gowid.IWidget, ...interface{}) {
+func (f *ButtonTester) Changed(gowid.IApp, gowid.IWidget, ...any) {
 	f.Gotit = true
 }
 
-func (f *ButtonTester) ID() interface{} { return "foo" }
+func (f *ButtonTester) ID() any { return "foo" }
 
 //======================================================================
 
@@ -188,24 +186,24 @@ func ClickUpAt(x, y int) *tcell.EventMouse {
 	return tcell.NewEventMouse(x, y, tcell.ButtonNone, 0)
 }
 
-func KeyEvent(ch rune) *tcell.EventKey {
+func KeyEvent(ch string) *tcell.EventKey {
 	return tcell.NewEventKey(tcell.KeyRune, ch, tcell.ModNone)
 }
 
 func CursorDown() *tcell.EventKey {
-	return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
+	return tcell.NewEventKey(tcell.KeyDown, "", tcell.ModNone)
 }
 
 func CursorUp() *tcell.EventKey {
-	return tcell.NewEventKey(tcell.KeyUp, 0, tcell.ModNone)
+	return tcell.NewEventKey(tcell.KeyUp, "", tcell.ModNone)
 }
 
 func CursorLeft() *tcell.EventKey {
-	return tcell.NewEventKey(tcell.KeyLeft, 0, tcell.ModNone)
+	return tcell.NewEventKey(tcell.KeyLeft, "", tcell.ModNone)
 }
 
 func CursorRight() *tcell.EventKey {
-	return tcell.NewEventKey(tcell.KeyRight, 0, tcell.ModNone)
+	return tcell.NewEventKey(tcell.KeyRight, "", tcell.ModNone)
 }
 
 //======================================================================

@@ -9,29 +9,30 @@ package vim
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
 )
 
 //======================================================================
 
 var (
-	DefaultEmacsDownKeys = []KeyPress{KeyCtrl('n')}
-	DefaultEmacsUpKeys   = []KeyPress{KeyCtrl('p')}
-	DefaultVimDownKeys   = []KeyPress{Key('j')}
-	DefaultVimUpKeys     = []KeyPress{Key('k')}
+	DefaultEmacsDownKeys = []KeyPress{KeyCtrl("n")}
+	DefaultEmacsUpKeys   = []KeyPress{KeyCtrl("p")}
+	DefaultVimDownKeys   = []KeyPress{Key("j")}
+	DefaultVimUpKeys     = []KeyPress{Key("k")}
 	DefaultDownKeys      = []KeyPress{KeyPressDown}
 	DefaultUpKeys        = []KeyPress{KeyPressUp}
 	AllDownKeys          = append(DefaultDownKeys, append(DefaultEmacsDownKeys, DefaultVimDownKeys...)...)
 	AllUpKeys            = append(DefaultUpKeys, append(DefaultEmacsUpKeys, DefaultVimUpKeys...)...)
 
-	DefaultEmacsLeftKeys  = []KeyPress{KeyCtrl('b')}
-	DefaultEmacsRightKeys = []KeyPress{KeyCtrl('f')}
-	DefaultVimLeftKeys    = []KeyPress{Key('h')}
-	DefaultVimRightKeys   = []KeyPress{Key('l')}
+	DefaultEmacsLeftKeys  = []KeyPress{KeyCtrl("b")}
+	DefaultEmacsRightKeys = []KeyPress{KeyCtrl("f")}
+	DefaultVimLeftKeys    = []KeyPress{Key("h")}
+	DefaultVimRightKeys   = []KeyPress{Key("l")}
 	DefaultLeftKeys       = []KeyPress{KeyPressLeft}
 	DefaultRightKeys      = []KeyPress{KeyPressRight}
 	AllLeftKeys           = append(DefaultLeftKeys, append(DefaultEmacsLeftKeys, DefaultVimLeftKeys...)...)
@@ -104,29 +105,29 @@ var (
 		tcell.KeyF12:    "<F12>",
 	}
 
-	KeyPressUp     KeyPress = NewKeyPress(tcell.KeyUp, 0, 0)
-	KeyPressDown   KeyPress = NewKeyPress(tcell.KeyDown, 0, 0)
-	KeyPressLeft   KeyPress = NewKeyPress(tcell.KeyLeft, 0, 0)
-	KeyPressRight  KeyPress = NewKeyPress(tcell.KeyRight, 0, 0)
-	KeyPressEnter  KeyPress = NewKeyPress(tcell.KeyEnter, 0, 0)
-	KeyPressEscape KeyPress = NewKeyPress(tcell.KeyEscape, 0, 0)
-	KeyPressTab    KeyPress = NewKeyPress(tcell.KeyTab, 0, 0)
-	KeyPressHome   KeyPress = NewKeyPress(tcell.KeyTab, 0, 0)
-	KeyPressEnd    KeyPress = NewKeyPress(tcell.KeyTab, 0, 0)
-	KeyPressPgUp   KeyPress = NewKeyPress(tcell.KeyPgUp, 0, 0)
-	KeyPressPgDn   KeyPress = NewKeyPress(tcell.KeyPgDn, 0, 0)
-	KeyPressF1     KeyPress = NewKeyPress(tcell.KeyF1, 0, 0)
-	KeyPressF2     KeyPress = NewKeyPress(tcell.KeyF2, 0, 0)
-	KeyPressF3     KeyPress = NewKeyPress(tcell.KeyF3, 0, 0)
-	KeyPressF4     KeyPress = NewKeyPress(tcell.KeyF4, 0, 0)
-	KeyPressF5     KeyPress = NewKeyPress(tcell.KeyF5, 0, 0)
-	KeyPressF6     KeyPress = NewKeyPress(tcell.KeyF6, 0, 0)
-	KeyPressF7     KeyPress = NewKeyPress(tcell.KeyF7, 0, 0)
-	KeyPressF8     KeyPress = NewKeyPress(tcell.KeyF8, 0, 0)
-	KeyPressF9     KeyPress = NewKeyPress(tcell.KeyF9, 0, 0)
-	KeyPressF10    KeyPress = NewKeyPress(tcell.KeyF10, 0, 0)
-	KeyPressF11    KeyPress = NewKeyPress(tcell.KeyF11, 0, 0)
-	KeyPressF12    KeyPress = NewKeyPress(tcell.KeyF12, 0, 0)
+	KeyPressUp     KeyPress = NewKeyPress(tcell.KeyUp, "", 0)
+	KeyPressDown   KeyPress = NewKeyPress(tcell.KeyDown, "", 0)
+	KeyPressLeft   KeyPress = NewKeyPress(tcell.KeyLeft, "", 0)
+	KeyPressRight  KeyPress = NewKeyPress(tcell.KeyRight, "", 0)
+	KeyPressEnter  KeyPress = NewKeyPress(tcell.KeyEnter, "", 0)
+	KeyPressEscape KeyPress = NewKeyPress(tcell.KeyEscape, "", 0)
+	KeyPressTab    KeyPress = NewKeyPress(tcell.KeyTab, "", 0)
+	KeyPressHome   KeyPress = NewKeyPress(tcell.KeyTab, "", 0)
+	KeyPressEnd    KeyPress = NewKeyPress(tcell.KeyTab, "", 0)
+	KeyPressPgUp   KeyPress = NewKeyPress(tcell.KeyPgUp, "", 0)
+	KeyPressPgDn   KeyPress = NewKeyPress(tcell.KeyPgDn, "", 0)
+	KeyPressF1     KeyPress = NewKeyPress(tcell.KeyF1, "", 0)
+	KeyPressF2     KeyPress = NewKeyPress(tcell.KeyF2, "", 0)
+	KeyPressF3     KeyPress = NewKeyPress(tcell.KeyF3, "", 0)
+	KeyPressF4     KeyPress = NewKeyPress(tcell.KeyF4, "", 0)
+	KeyPressF5     KeyPress = NewKeyPress(tcell.KeyF5, "", 0)
+	KeyPressF6     KeyPress = NewKeyPress(tcell.KeyF6, "", 0)
+	KeyPressF7     KeyPress = NewKeyPress(tcell.KeyF7, "", 0)
+	KeyPressF8     KeyPress = NewKeyPress(tcell.KeyF8, "", 0)
+	KeyPressF9     KeyPress = NewKeyPress(tcell.KeyF9, "", 0)
+	KeyPressF10    KeyPress = NewKeyPress(tcell.KeyF10, "", 0)
+	KeyPressF11    KeyPress = NewKeyPress(tcell.KeyF11, "", 0)
+	KeyPressF12    KeyPress = NewKeyPress(tcell.KeyF12, "", 0)
 
 	KeyPressF = []KeyPress{
 		KeyPressF1,
@@ -156,8 +157,8 @@ func init() {
 // of the keypress.
 type KeyPress gowid.Key
 
-func KeyCtrl(r rune) KeyPress {
-	return KeyPress(gowid.MakeKeyExt2(tcell.ModCtrl, tcell.KeyRune, r))
+func KeyCtrl(s string) KeyPress {
+	return KeyPress(gowid.MakeKeyExt2(tcell.ModCtrl, tcell.KeyRune, s))
 }
 
 // KeyPressFromTcell converts a *tcell.EventKey to a KeyPress. This can then be
@@ -165,54 +166,32 @@ func KeyCtrl(r rune) KeyPress {
 func KeyPressFromTcell(k *tcell.EventKey) KeyPress {
 	mod := k.Modifiers()
 	tk := k.Key()
-	ch := k.Rune()
+	ch := k.Str()
+	if len(ch) > 0 {
+		ch = ch[:1]
+	}
 	if tk >= tcell.KeyCtrlA && tk <= tcell.KeyCtrlZ {
-		ch = rune(int(tk) + int('a') - 1)
+		ch = string(rune(int(tk) + int('a') - 1))
 		tk = tcell.KeyRune
-	} else {
-		switch tk {
-		case tcell.KeyCtrlSpace:
-			ch = ' '
-			tk = tcell.KeyRune
-		case tcell.KeyCtrlLeftSq:
-			ch = '['
-			tk = tcell.KeyRune
-		case tcell.KeyCtrlRightSq:
-			ch = ']'
-			tk = tcell.KeyRune
-		case tcell.KeyCtrlCarat:
-			ch = '^'
-			tk = tcell.KeyRune
-		case tcell.KeyCtrlUnderscore:
-			ch = '_'
-			tk = tcell.KeyRune
-		case tcell.KeyCtrlBackslash:
-			ch = '\\'
-			tk = tcell.KeyRune
-		}
 	}
 	return KeyPress(gowid.MakeKeyExt2(mod, tk, ch))
 }
 
-func NewSimpleKeyPress(ch rune) KeyPress {
+func NewSimpleKeyPress(ch string) KeyPress {
 	return NewKeyPress(tcell.KeyRune, ch, 0)
 }
 
-func Key(ch rune) KeyPress {
+func Key(ch string) KeyPress {
 	return NewKeyPress(tcell.KeyRune, ch, 0)
 }
 
-func NewKeyPress(k tcell.Key, ch rune, mod tcell.ModMask) KeyPress {
-	if k == tcell.KeyRune && (ch < ' ' || ch == 0x7f) {
-		// Turn specials into proper key codes.  This is for
-		// control characters and the DEL.
-		k = tcell.Key(ch)
-		if mod == tcell.ModNone && ch < ' ' {
-			switch tcell.Key(ch) {
+func NewKeyPress(k tcell.Key, ch string, mod tcell.ModMask) KeyPress {
+	if k == tcell.KeyRune && len(ch) > 0 && (ch[0] < ' ' || ch[0] == 0x7f) {
+		k = tcell.Key(ch[0])
+		if mod == tcell.ModNone && ch[0] < ' ' {
+			switch tcell.Key(ch[0]) {
 			case tcell.KeyBackspace, tcell.KeyTab, tcell.KeyEsc, tcell.KeyEnter:
-				// these keys are directly typeable without CTRL
 			default:
-				// most likely entered with a CTRL keypress
 				mod = tcell.ModCtrl
 			}
 		}
@@ -224,18 +203,18 @@ func (k KeyPress) String() string {
 	gk := gowid.Key(k)
 	if gk.Key() == tcell.KeyRune {
 		if mod, ok := ModMap[gk.Modifiers()]; ok {
-			if gk.Rune() == ' ' {
+			if gk.Str() == " " {
 				return fmt.Sprintf("<%s-space>", mod)
 			} else {
-				return fmt.Sprintf("<%s-%c>", mod, gk.Rune())
+				return fmt.Sprintf("<%s-%s>", mod, gk.Str())
 			}
 		} else {
-			if gk.Rune() == '<' {
+			if gk.Str() == "<" {
 				return "<Lt>"
-			} else if gk.Rune() == ' ' {
+			} else if gk.Str() == " " {
 				return "<Space>"
 			} else {
-				return string(gk.Rune())
+				return gk.Str()
 			}
 		}
 	} else if str, ok := SpecialKeyMap[gk.Key()]; ok {
@@ -261,7 +240,7 @@ func (ks KeySequence) String() string {
 func VimStringToKeys(input string) KeySequence {
 	matches := keyExp.FindAllStringSubmatch(input, -1)
 	results := make([]map[string]string, len(matches))
-	for j, _ := range matches {
+	for j := range matches {
 		results[j] = make(map[string]string)
 		for i, name := range keyExp.SubexpNames() {
 			if i != 0 && name != "" {
@@ -303,19 +282,19 @@ func VimStringToKeys(input string) KeySequence {
 			i, _ := strconv.Atoi(str)
 			res = append(res, KeyPressF[i-1])
 		} else if str, ok := result["lt"]; ok && str != "" {
-			res = append(res, NewSimpleKeyPress('<'))
+			res = append(res, NewSimpleKeyPress("<"))
 		} else if str, ok := result["space"]; ok && str != "" {
-			res = append(res, NewSimpleKeyPress(' '))
+			res = append(res, NewSimpleKeyPress(" "))
 		} else if str, ok := result["char"]; ok && str != "" {
-			res = append(res, NewSimpleKeyPress(rune(str[0])))
+			res = append(res, NewSimpleKeyPress(str))
 		} else if str, ok := result["modchar"]; ok && str != "" {
 			// regexp guarantees ModMask lookup is safe
-			res = append(res, NewKeyPress(tcell.KeyRune, rune(str[0]), ModMapReverse[result["mod"]]))
+			res = append(res, NewKeyPress(tcell.KeyRune, string(rune(str[0])), ModMapReverse[result["mod"]]))
 		} else if str, ok := result["modspecial"]; ok && str != "" {
 			// regexp guarantees ModMask lookup is safe
 			switch strings.ToLower(str) {
 			case "space":
-				res = append(res, NewKeyPress(tcell.KeyRune, ' ', ModMapReverse[result["mod"]]))
+				res = append(res, NewKeyPress(tcell.KeyRune, " ", ModMapReverse[result["mod"]]))
 			}
 		}
 	}
@@ -324,13 +303,7 @@ func VimStringToKeys(input string) KeySequence {
 }
 
 func KeyIn(k *tcell.EventKey, keys []KeyPress) bool {
-	kp := KeyPressFromTcell(k)
-	for i, _ := range keys {
-		if kp == keys[i] {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(keys, KeyPressFromTcell(k))
 }
 
 //======================================================================

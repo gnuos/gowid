@@ -10,10 +10,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	tcell "github.com/gdamore/tcell/v2"
-	"github.com/gdamore/tcell/v2/terminfo"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,10 +24,6 @@ type FakeTerminal struct {
 
 func (f *FakeTerminal) Modes() *Modes {
 	return f.modes
-}
-
-func (f *FakeTerminal) Terminfo() *terminfo.Terminfo {
-	panic(errors.New("Must not call!"))
 }
 
 func (f *FakeTerminal) Width() int {
@@ -307,7 +302,7 @@ func TestCanvas37(t *testing.T) {
 	res = strings.Join([]string{"    ", "    ", "    ", "    ", "A  a", "    "}, "\n")
 	assert.Equal(t, res, c.String(), "Failed")
 
-	_, err = io.Copy(c, strings.NewReader("[4;4Ha"))
+	_, err = io.Copy(c, strings.NewReader("\x1b[4;4Ha"))
 	assert.NoError(t, err)
 	res = strings.Join([]string{"    ", "    ", "    ", "    ", "A  a", "    "}, "\n")
 	assert.Equal(t, res, c.String(), "Failed")

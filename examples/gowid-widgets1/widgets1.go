@@ -8,23 +8,22 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/holder"
-	"github.com/gcla/gowid/widgets/palettemap"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/progress"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	"github.com/gcla/gowid/widgets/vpadding"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/holder"
+	"github.com/gnuos/gowid/widgets/palettemap"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/progress"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gnuos/gowid/widgets/vpadding"
 	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
 )
 
 //======================================================================
@@ -55,9 +54,9 @@ func (w *PBWidget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowi
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	if evk, ok := ev.(*tcell.EventKey); ok {
-		if evk.Key() == tcell.KeyCtrlC || evk.Rune() == 'q' || evk.Rune() == 'Q' {
+		if evk.Key() == tcell.KeyCtrlC || evk.Str() == "q" || evk.Str() == "Q" {
 			app.Quit()
 			return true
 		}
@@ -105,8 +104,9 @@ func main() {
 
 	tw1 := text.New("click me or double-click me█ █xx")
 	tw := styled.NewWithRanges(tw1,
-
-		[]styled.AttributeRange{styled.AttributeRange{0, 2, nl("test1notfocus")}}, []styled.AttributeRange{styled.AttributeRange{0, -1, nl("test1focus")}})
+		[]styled.AttributeRange{{Start: 0, End: 2, Styler: nl("test1notfocus")}},
+		[]styled.AttributeRange{{Start: 0, End: -1, Styler: nl("test1focus")}},
+	)
 
 	bw1i := button.New(tw, button.Options{
 		Decoration:       button.NormalDecoration,
@@ -122,7 +122,7 @@ func main() {
 
 	e2e := edit.New(edit.Options{Caption: "Domain:", Text: "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"})
 
-	bw1i.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
+	bw1i.OnClick(gowid.WidgetCallback{Name: "cb", WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
 		pb1.SetProgress(app, pb1.Progress()+1)
 		if mt.SubWidget() == mti {
 			mt.SetSubWidget(mtj, app)
@@ -131,25 +131,26 @@ func main() {
 		}
 	}})
 
-	bw1i.OnDoubleClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		logrus.Infof("GCLA: got double click")
-		pb1.SetProgress(app, 0)
-	}})
+	bw1i.OnDoubleClick(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			logrus.Infof("GCLA: got double click")
+			pb1.SetProgress(app, 0)
+		}})
 
 	pw := pile.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{pb1, flowme},
-		&gowid.ContainerWidget{dv1, flowme},
-		&gowid.ContainerWidget{bw1, flowme},
-		&gowid.ContainerWidget{dv1, flowme},
-		&gowid.ContainerWidget{e1, flowme},
-		&gowid.ContainerWidget{dv1, flowme},
-		&gowid.ContainerWidget{e2, flowme},
-		&gowid.ContainerWidget{dv1, flowme},
-		&gowid.ContainerWidget{e2e, flowme},
-		&gowid.ContainerWidget{dv1, flowme},
-		&gowid.ContainerWidget{mt, flowme},
-		&gowid.ContainerWidget{dv1, flowme},
-		&gowid.ContainerWidget{xt2, flowme},
+		&gowid.ContainerWidget{IWidget: pb1, D: flowme},
+		&gowid.ContainerWidget{IWidget: dv1, D: flowme},
+		&gowid.ContainerWidget{IWidget: bw1, D: flowme},
+		&gowid.ContainerWidget{IWidget: dv1, D: flowme},
+		&gowid.ContainerWidget{IWidget: e1, D: flowme},
+		&gowid.ContainerWidget{IWidget: dv1, D: flowme},
+		&gowid.ContainerWidget{IWidget: e2, D: flowme},
+		&gowid.ContainerWidget{IWidget: dv1, D: flowme},
+		&gowid.ContainerWidget{IWidget: e2e, D: flowme},
+		&gowid.ContainerWidget{IWidget: dv1, D: flowme},
+		&gowid.ContainerWidget{IWidget: mt, D: flowme},
+		&gowid.ContainerWidget{IWidget: dv1, D: flowme},
+		&gowid.ContainerWidget{IWidget: xt2, D: flowme},
 	})
 	twi := styled.New(text.New(" widgets1 "), gowid.MakePaletteRef("magenta"))
 	params := framed.Options{
@@ -162,7 +163,7 @@ func main() {
 	app, err := gowid.NewApp(gowid.AppArgs{
 		View:    pw2,
 		Palette: &styles,
-		Log:     log.StandardLogger(),
+		Log:     logrus.StandardLogger(),
 	})
 	examples.ExitOnErr(err)
 

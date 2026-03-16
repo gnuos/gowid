@@ -9,10 +9,10 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gdamore/tcell/v3"
 	"github.com/mattn/go-runewidth"
 )
 
@@ -174,7 +174,7 @@ func (w *Widget) RenderSize(size gowid.IRenderSize, focus gowid.Selector, app go
 	return RenderSize(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -319,13 +319,13 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 	return res
 }
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	subSize := w.SubWidgetSize(size, focus, app)
 	newev := gowid.TranslatedMouseEvent(ev, -1, -1)
 
 	if _, ok := ev.(*tcell.EventMouse); ok {
 		ss := w.SubWidget().RenderSize(subSize, focus, app)
-		newev2, _ := newev.(*tcell.EventMouse) // gcla tcell todo - clumsy
+		newev2, _ := newev.(*tcell.EventMouse) // gcla todo - clumsy
 		mx, my := newev2.Position()
 		if my < ss.BoxRows() && my >= 0 && mx < ss.BoxColumns() && mx >= 0 {
 			return gowid.UserInputIfSelectable(w.SubWidget(), newev, subSize, focus, app)

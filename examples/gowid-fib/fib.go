@@ -8,15 +8,15 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/hpadding"
-	"github.com/gcla/gowid/widgets/list"
-	"github.com/gcla/gowid/widgets/palettemap"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/selectable"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/hpadding"
+	"github.com/gnuos/gowid/widgets/list"
+	"github.com/gnuos/gowid/widgets/palettemap"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/selectable"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -48,13 +48,12 @@ func (f FibWalker) GreaterThan(other list.IWalkerPosition) bool {
 	case FibWalker:
 		return (f.b.Cmp(&o.b) > 0)
 	default:
-		panic(fmt.Errorf("Invalid type to compare against FibWalker - %T", other))
+		panic(fmt.Errorf("invalid type to compare against FibWalker - %T", other))
 	}
 }
 
 func getWidget(f FibWalker) gowid.IWidget {
-	var res gowid.IWidget
-	res = selectable.New(
+	var res = selectable.New(
 		palettemap.New(
 			hpadding.New(
 				text.NewFromContent(

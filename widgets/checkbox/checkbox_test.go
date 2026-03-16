@@ -6,10 +6,10 @@ package checkbox
 import (
 	"testing"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/text"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/text"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -9,8 +9,8 @@ package clicktracker
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -84,13 +84,13 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return Render(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
 //======================================================================
 
-func SubWidgetSize(size interface{}, focus gowid.Selector, app gowid.IApp) gowid.IRenderSize {
+func SubWidgetSize(size any, focus gowid.Selector, app gowid.IApp) gowid.IRenderSize {
 	return size
 }
 
@@ -98,7 +98,7 @@ func RenderSize(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gow
 	return gowid.RenderSize(w.SubWidget(), size, focus, app)
 }
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
 		switch ev.Buttons() {

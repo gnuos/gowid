@@ -7,22 +7,22 @@ package main
 import (
 	"math/rand"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/asciigraph"
-	"github.com/gcla/gowid/widgets/checkbox"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/hpadding"
-	"github.com/gcla/gowid/widgets/overlay"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/radio"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	"github.com/gcla/gowid/widgets/vpadding"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/asciigraph"
+	"github.com/gnuos/gowid/widgets/checkbox"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/hpadding"
+	"github.com/gnuos/gowid/widgets/overlay"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/radio"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gnuos/gowid/widgets/vpadding"
 	asc "github.com/guptarohit/asciigraph"
 	log "github.com/sirupsen/logrus"
 )
@@ -36,24 +36,24 @@ var ovh, ovw int = 50, 50
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	handled := false
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		handled = true
-		if evk.Key() == tcell.KeyCtrlC || evk.Key() == tcell.KeyEsc || evk.Rune() == 'q' || evk.Rune() == 'Q' {
+		if evk.Key() == tcell.KeyCtrlC || evk.Key() == tcell.KeyEsc || evk.Str() == "q" || evk.Str() == "Q" {
 			app.Quit()
-		} else if evk.Key() == tcell.KeyUp || evk.Rune() == 'u' {
+		} else if evk.Key() == tcell.KeyUp || evk.Str() == "u" {
 			ovh = gwutil.Min(100, ovh+1)
-			ov.SetHeight(gowid.RenderWithRatio{float64(ovh) / 100.0}, app)
-		} else if evk.Key() == tcell.KeyDown || evk.Rune() == 'd' {
+			ov.SetHeight(gowid.RenderWithRatio{R: float64(ovh) / 100.0}, app)
+		} else if evk.Key() == tcell.KeyDown || evk.Str() == "d" {
 			ovh = gwutil.Max(0, ovh-1)
-			ov.SetHeight(gowid.RenderWithRatio{float64(ovh) / 100.0}, app)
+			ov.SetHeight(gowid.RenderWithRatio{R: float64(ovh) / 100.0}, app)
 		} else if evk.Key() == tcell.KeyRight {
 			ovw = gwutil.Min(100, ovw+1)
-			ov.SetWidth(gowid.RenderWithRatio{float64(ovw) / 100.0}, app)
+			ov.SetWidth(gowid.RenderWithRatio{R: float64(ovw) / 100.0}, app)
 		} else if evk.Key() == tcell.KeyLeft {
 			ovw = gwutil.Max(0, ovw-1)
-			ov.SetWidth(gowid.RenderWithRatio{float64(ovw) / 100.0}, app)
+			ov.SetWidth(gowid.RenderWithRatio{R: float64(ovw) / 100.0}, app)
 		} else {
 			handled = false
 		}
@@ -96,31 +96,31 @@ func main() {
 		}
 		if rb3.IsChecked() {
 			data3 := make([]float64, 40)
-			for i := 0; i < len(data3); i++ {
+			for i := range len(data3) {
 				data3[i] = gwutil.Round(rand.Float64() * 14)
 			}
 			graph.SetData(data3, app)
 		}
 	}
 
-	rb1.OnClick(gowid.WidgetCallback{gowid.ClickCB{}, callback})
-	rb2.OnClick(gowid.WidgetCallback{gowid.ClickCB{}, callback})
-	rb3.OnClick(gowid.WidgetCallback{gowid.ClickCB{}, callback})
+	rb1.OnClick(gowid.WidgetCallback{Name: gowid.ClickCB{}, WidgetChangedFunction: callback})
+	rb2.OnClick(gowid.WidgetCallback{Name: gowid.ClickCB{}, WidgetChangedFunction: callback})
+	rb3.OnClick(gowid.WidgetCallback{Name: gowid.ClickCB{}, WidgetChangedFunction: callback})
 
 	c2cols := []gowid.IContainerWidget{
-		&gowid.ContainerWidget{rb1, fixed},
-		&gowid.ContainerWidget{rbt1, fixed},
-		&gowid.ContainerWidget{rb2, fixed},
-		&gowid.ContainerWidget{rbt2, fixed},
-		&gowid.ContainerWidget{rb3, fixed},
-		&gowid.ContainerWidget{rbt3, fixed},
+		&gowid.ContainerWidget{IWidget: rb1, D: fixed},
+		&gowid.ContainerWidget{IWidget: rbt1, D: fixed},
+		&gowid.ContainerWidget{IWidget: rb2, D: fixed},
+		&gowid.ContainerWidget{IWidget: rbt2, D: fixed},
+		&gowid.ContainerWidget{IWidget: rb3, D: fixed},
+		&gowid.ContainerWidget{IWidget: rbt3, D: fixed},
 	}
 	cols := columns.New(c2cols)
 
 	rows := pile.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{cols, gowid.RenderWithUnits{U: 1}},
-		&gowid.ContainerWidget{divider.NewUnicode(), gowid.RenderFlow{}},
-		&gowid.ContainerWidget{graph, gowid.RenderWithWeight{1}},
+		&gowid.ContainerWidget{IWidget: cols, D: gowid.RenderWithUnits{U: 1}},
+		&gowid.ContainerWidget{IWidget: divider.NewUnicode(), D: gowid.RenderFlow{}},
+		&gowid.ContainerWidget{IWidget: graph, D: gowid.RenderWithWeight{W: 1}},
 	})
 
 	fcols := framed.NewUnicodeAlt(framed.NewUnicodeAlt(rows))
@@ -128,8 +128,8 @@ func main() {
 	bottom := vpadding.New(hpadding.New(checkbox.New(false), gowid.HAlignLeft{}, gowid.RenderFixed{}), gowid.VAlignTop{}, gowid.RenderFlow{})
 
 	ov = overlay.New(top, bottom,
-		gowid.VAlignMiddle{}, gowid.RenderWithRatio{0.5},
-		gowid.HAlignMiddle{}, gowid.RenderWithRatio{0.5})
+		gowid.VAlignMiddle{}, gowid.RenderWithRatio{R: 0.5},
+		gowid.HAlignMiddle{}, gowid.RenderWithRatio{R: 0.5})
 
 	app, err := gowid.NewApp(gowid.AppArgs{
 		View:    ov,

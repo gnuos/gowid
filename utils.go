@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -27,8 +27,8 @@ type Unit struct{}
 //======================================================================
 
 type InvalidTypeToCompare struct {
-	LHS interface{}
-	RHS interface{}
+	LHS any
+	RHS any
 }
 
 var _ error = InvalidTypeToCompare{}
@@ -41,7 +41,7 @@ func (e InvalidTypeToCompare) Error() string {
 
 type KeyValueError struct {
 	Base    error
-	KeyVals map[string]interface{}
+	KeyVals map[string]any
 }
 
 var _ error = KeyValueError{}
@@ -63,7 +63,7 @@ func (e KeyValueError) Unwrap() error {
 	return e.Base
 }
 
-func WithKVs(err error, kvs map[string]interface{}) KeyValueError {
+func WithKVs(err error, kvs map[string]any) KeyValueError {
 	return KeyValueError{
 		Base:    err,
 		KeyVals: kvs,
@@ -72,10 +72,10 @@ func WithKVs(err error, kvs map[string]interface{}) KeyValueError {
 
 //======================================================================
 
-// TranslatedMouseEvent is supplied with a tcell event and an x and y
-// offset - it returns a tcell mouse event that represents a horizontal and
+// TranslatedMouseEvent is supplied with a event and an x and y
+// offset - it returns a mouse event that represents a horizontal and
 // vertical translation.
-func TranslatedMouseEvent(ev interface{}, x, y int) interface{} {
+func TranslatedMouseEvent(ev any, x, y int) any {
 	if ev3, ok := ev.(*tcell.EventMouse); ok {
 		x2, y2 := ev3.Position()
 		evTr := tcell.NewEventMouse(x2+x, y2+y, ev3.Buttons(), ev3.Modifiers())
@@ -129,7 +129,7 @@ func (p *PrettyTcellKey) String() string {
 	mod := PrettyModMask(k.Modifiers())
 	switch k.Key() {
 	case tcell.KeyRune:
-		return fmt.Sprintf("<Char:%c Mod:%v>", k.Rune(), mod)
+		return fmt.Sprintf("<Char:%s Mod:%v>", k.Str(), mod)
 	default:
 		return fmt.Sprintf("<Key:%s Mod:%v>", tcell.KeyNames[k.Key()], mod)
 	}

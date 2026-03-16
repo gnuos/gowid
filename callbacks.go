@@ -28,55 +28,55 @@ type WidthCB struct{}
 // be removed.
 type ICallback interface {
 	IIdentity
-	Call(args ...interface{})
+	Call(args ...any)
 }
 
-type CallbackFunction func(args ...interface{})
+type CallbackFunction func(args ...any)
 
 type CallbackID struct {
-	Name interface{}
+	Name any
 }
 
 // Callback is a simple implementation of ICallback.
 type Callback struct {
-	Name interface{}
+	Name any
 	CallbackFunction
 }
 
-func (f CallbackFunction) Call(args ...interface{}) {
+func (f CallbackFunction) Call(args ...any) {
 	f(args...)
 }
 
-func (f CallbackID) ID() interface{} {
+func (f CallbackID) ID() any {
 	return f.Name
 }
 
-func (f Callback) ID() interface{} {
+func (f Callback) ID() any {
 	return f.Name
 }
 
 type Callbacks struct {
 	sync.Mutex
-	callbacks map[interface{}][]ICallback
+	callbacks map[any][]ICallback
 }
 
 type ICallbacks interface {
-	RunCallbacks(name interface{}, args ...interface{})
-	AddCallback(name interface{}, cb ICallback)
-	RemoveCallback(name interface{}, cb IIdentity) bool
-	HaveCallbacks(interface{}) bool
+	RunCallbacks(name any, args ...any)
+	AddCallback(name any, cb ICallback)
+	RemoveCallback(name any, cb IIdentity) bool
+	HaveCallbacks(any) bool
 }
 
 func NewCallbacks() *Callbacks {
 	cb := &Callbacks{}
-	cb.callbacks = make(map[interface{}][]ICallback)
+	cb.callbacks = make(map[any][]ICallback)
 
 	var _ ICallbacks = cb
 
 	return cb
 }
 
-func (f *Callbacks) HaveCallbacks(t interface{}) bool {
+func (f *Callbacks) HaveCallbacks(t any) bool {
 	return f != nil && f.callbacks != nil && len(f.callbacks[t]) > 0
 }
 
@@ -85,7 +85,7 @@ func (f *Callbacks) HaveCallbacks(t interface{}) bool {
 // safely with the modifications taking effect after all callbacks
 // are run. Can be called with a nil receiver if the widget's callback
 // object has not been initialized and e.g. RunWidgetCallbacks is called.
-func (c *Callbacks) CopyOfCallbacks(name interface{}) ([]ICallback, bool) {
+func (c *Callbacks) CopyOfCallbacks(name any) ([]ICallback, bool) {
 	if c != nil {
 		c.Lock()
 		defer c.Unlock()
@@ -99,7 +99,7 @@ func (c *Callbacks) CopyOfCallbacks(name interface{}) ([]ICallback, bool) {
 	return []ICallback{}, false
 }
 
-func (c *Callbacks) RunCallbacks(name interface{}, args ...interface{}) {
+func (c *Callbacks) RunCallbacks(name any, args ...any) {
 	if cbs, ok := c.CopyOfCallbacks(name); ok {
 		for _, cb := range cbs {
 			if cb != nil {
@@ -109,7 +109,7 @@ func (c *Callbacks) RunCallbacks(name interface{}, args ...interface{}) {
 	}
 }
 
-func (c *Callbacks) AddCallback(name interface{}, cb ICallback) {
+func (c *Callbacks) AddCallback(name any, cb ICallback) {
 	c.Lock()
 	defer c.Unlock()
 	cbs := c.callbacks[name]
@@ -117,7 +117,7 @@ func (c *Callbacks) AddCallback(name interface{}, cb ICallback) {
 	c.callbacks[name] = cbs
 }
 
-func (c *Callbacks) RemoveCallback(name interface{}, cb IIdentity) bool {
+func (c *Callbacks) RemoveCallback(name any, cb IIdentity) bool {
 	if c == nil {
 		return false
 	}

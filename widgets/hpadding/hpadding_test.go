@@ -9,12 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
-	"github.com/gcla/gowid/widgets/checkbox"
-	"github.com/gcla/gowid/widgets/fill"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
+	"github.com/gnuos/gowid/widgets/checkbox"
+	"github.com/gnuos/gowid/widgets/fill"
+	"github.com/gnuos/gowid/widgets/text"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -140,7 +140,7 @@ func TestCheckbox2(t *testing.T) {
 	w := checkbox.New(false)
 	w.OnClick(ct)
 
-	ev := tcell.NewEventKey(tcell.KeyRune, ' ', tcell.ModNone)
+	ev := tcell.NewEventKey(tcell.KeyRune, " ", tcell.ModNone)
 
 	w.UserInput(ev, gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 
@@ -153,7 +153,7 @@ func TestCheckbox2(t *testing.T) {
 	evnonex1y0 := tcell.NewEventMouse(1, 0, tcell.ButtonNone, 0)
 
 	w.UserInput(evlmx1y0, gowid.RenderFixed{}, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	w.UserInput(evnonex1y0, gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	gwtest.D.SetLastMouseState(gowid.MouseState{})
 	assert.Equal(t, ct.Gotit, true)
@@ -162,7 +162,7 @@ func TestCheckbox2(t *testing.T) {
 	ct.Gotit = false
 	assert.Equal(t, ct.Gotit, false)
 	w2.UserInput(evlmx1y0, gowid.RenderBox{C: 10, R: 1}, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	w2.UserInput(evnonex1y0, gowid.RenderBox{C: 10, R: 1}, gowid.Focused, gwtest.D)
 	gwtest.D.SetLastMouseState(gowid.MouseState{})
 	assert.Equal(t, ct.Gotit, true)
@@ -179,7 +179,7 @@ func TestCheckbox2(t *testing.T) {
 	evnonex5y0 := tcell.NewEventMouse(5, 0, tcell.ButtonNone, 0)
 
 	w3.UserInput(evlmx5y0, gowid.RenderBox{C: 10, R: 1}, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	w3.UserInput(evnonex5y0, gowid.RenderBox{C: 10, R: 1}, gowid.Focused, gwtest.D)
 	gwtest.D.SetLastMouseState(gowid.MouseState{})
 	assert.Equal(t, ct.Gotit, true)
@@ -206,15 +206,15 @@ func TestHorizontalPadding1(t *testing.T) {
 	c5 := w5.Render(gowid.RenderBox{C: 3, R: 4}, gowid.Focused, gwtest.D)
 	assert.Equal(t, c5.String(), " xx\n xx\n xx\n xx")
 
-	w6 := New(fill.New('x'), gowid.HAlignRight{}, gowid.RenderWithRatio{0.3})
+	w6 := New(fill.New('x'), gowid.HAlignRight{}, gowid.RenderWithRatio{R: 0.3})
 	c6 := w6.Render(gowid.RenderBox{C: 3, R: 4}, gowid.Focused, gwtest.D)
 	assert.Equal(t, c6.String(), "  x\n  x\n  x\n  x")
 
-	w7 := New(fill.New('x'), gowid.HAlignRight{}, gowid.RenderWithRatio{0.6})
+	w7 := New(fill.New('x'), gowid.HAlignRight{}, gowid.RenderWithRatio{R: 0.6})
 	c7 := w7.Render(gowid.RenderBox{C: 3, R: 4}, gowid.Focused, gwtest.D)
 	assert.Equal(t, c7.String(), " xx\n xx\n xx\n xx")
 
-	w8 := New(fill.New('x'), gowid.HAlignRight{}, gowid.RenderWithRatio{8.1})
+	w8 := New(fill.New('x'), gowid.HAlignRight{}, gowid.RenderWithRatio{R: 8.1})
 	c8 := w8.Render(gowid.RenderBox{C: 3, R: 4}, gowid.Focused, gwtest.D)
 	assert.Equal(t, c8.String(), "xxx\nxxx\nxxx\nxxx")
 

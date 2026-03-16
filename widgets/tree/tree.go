@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/list"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/list"
 	lru "github.com/hashicorp/golang-lru"
 )
 
@@ -181,11 +181,11 @@ func (t *Collapsible) SetCollapsed(app gowid.IApp, collapsed bool) {
 	}
 }
 
-func (t *Collapsible) AddOnCollapsed(name interface{}, cb ICollapsedCallback) {
+func (t *Collapsible) AddOnCollapsed(name any, cb ICollapsedCallback) {
 	t.Callbacks.AddCallback(Collapsed{},
 		gowid.Callback{name,
 			gowid.CallbackFunction(
-				func(args ...interface{}) {
+				func(args ...any) {
 					app := args[0].(gowid.IApp)
 					cb.Collapsed(app)
 				},
@@ -193,15 +193,15 @@ func (t *Collapsible) AddOnCollapsed(name interface{}, cb ICollapsedCallback) {
 		})
 }
 
-func (t *Collapsible) RemoveOnCollapsed(name interface{}) {
+func (t *Collapsible) RemoveOnCollapsed(name any) {
 	t.Callbacks.RemoveCallback(Collapsed{}, gowid.CallbackID{Name: name})
 }
 
-func (t *Collapsible) AddOnExpanded(name interface{}, cb IExpandedCallback) {
+func (t *Collapsible) AddOnExpanded(name any, cb IExpandedCallback) {
 	t.Callbacks.AddCallback(Expanded{},
 		gowid.Callback{name,
 			gowid.CallbackFunction(
-				func(args ...interface{}) {
+				func(args ...any) {
 					app := args[0].(gowid.IApp)
 					cb.Expanded(app)
 				},
@@ -209,7 +209,7 @@ func (t *Collapsible) AddOnExpanded(name interface{}, cb IExpandedCallback) {
 		})
 }
 
-func (t *Collapsible) RemoveOnExpanded(name interface{}) {
+func (t *Collapsible) RemoveOnExpanded(name any) {
 	t.Callbacks.RemoveCallback(Expanded{}, gowid.CallbackID{Name: name})
 }
 
@@ -652,14 +652,14 @@ func (f *TreeWalker) SetFocus(pos list.IWalkerPosition, app gowid.IApp) {
 
 type IWalkerCallback interface {
 	gowid.IIdentity
-	Changed(app gowid.IApp, tree ITreeWalker, data ...interface{})
+	Changed(app gowid.IApp, tree ITreeWalker, data ...any)
 }
 
 type walkerCallbackProxy struct {
 	IWalkerCallback
 }
 
-func (p walkerCallbackProxy) Call(args ...interface{}) {
+func (p walkerCallbackProxy) Call(args ...any) {
 	t := args[0].(gowid.IApp)
 	w := args[1].(ITreeWalker)
 	p.IWalkerCallback.Changed(t, w, args[2:]...)
@@ -667,7 +667,7 @@ func (p walkerCallbackProxy) Call(args ...interface{}) {
 
 type WalkerFunction func(app gowid.IApp, tree ITreeWalker)
 
-func (f WalkerFunction) Changed(app gowid.IApp, tree ITreeWalker, data ...interface{}) {
+func (f WalkerFunction) Changed(app gowid.IApp, tree ITreeWalker, data ...any) {
 	f(app, tree)
 }
 
@@ -675,31 +675,31 @@ func (f WalkerFunction) Changed(app gowid.IApp, tree ITreeWalker, data ...interf
 // that embeds a WidgetChangedFunction to be issued as a callback when a widget
 // property changes.
 type WalkerCallback struct {
-	Name interface{}
+	Name any
 	WalkerFunction
 }
 
-func MakeCallback(name interface{}, fn WalkerFunction) WalkerCallback {
+func MakeCallback(name any, fn WalkerFunction) WalkerCallback {
 	return WalkerCallback{
 		Name:           name,
 		WalkerFunction: fn,
 	}
 }
 
-func (f WalkerCallback) ID() interface{} {
+func (f WalkerCallback) ID() any {
 	return f.Name
 }
 
-func RunWalkerCallbacks(c gowid.ICallbacks, name interface{}, app gowid.IApp, data ...interface{}) {
-	data2 := append([]interface{}{app}, data...)
+func RunWalkerCallbacks(c gowid.ICallbacks, name any, app gowid.IApp, data ...any) {
+	data2 := append([]any{app}, data...)
 	c.RunCallbacks(name, data2...)
 }
 
-func AddWalkerCallback(c gowid.ICallbacks, name interface{}, cb IWalkerCallback) {
+func AddWalkerCallback(c gowid.ICallbacks, name any, cb IWalkerCallback) {
 	c.AddCallback(name, walkerCallbackProxy{cb})
 }
 
-func RemoveWalkerCallback(c gowid.ICallbacks, name interface{}, id gowid.IIdentity) {
+func RemoveWalkerCallback(c gowid.ICallbacks, name any, id gowid.IIdentity) {
 	c.RemoveCallback(name, id)
 }
 

@@ -8,8 +8,8 @@ package fixedadapter
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -60,7 +60,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return Render(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -70,7 +70,7 @@ func RenderSize(w gowid.IWidget, size gowid.IRenderSize, focus gowid.Selector, a
 	return gowid.CalculateRenderSizeFallback(w, size, focus, app)
 }
 
-func SubWidgetSize(w interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderSize {
+func SubWidgetSize(w any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderSize {
 	return gowid.RenderFixed{}
 }
 
@@ -92,7 +92,7 @@ func Render(w gowid.IComposite, size gowid.IRenderSize, focus gowid.Selector, ap
 
 // Ensure that a valid mouse interaction with a flow widget will result in a
 // mouse interaction with the subwidget
-func UserInput(w gowid.ICompositeWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w gowid.ICompositeWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	if evm, ok := ev.(*tcell.EventMouse); ok {
 		box := RenderSize(w, size, focus, app)
 		mx, my := evm.Position()

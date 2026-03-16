@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
 )
 
 //======================================================================
@@ -59,8 +59,6 @@ var (
 	BareDecoration   = Decoration{Left: "", Right: ""}
 	NormalDecoration = Decoration{Left: "<", Right: ">"}
 	AltDecoration    = Decoration{Left: "[", Right: "]"}
-
-	noTime time.Time
 )
 
 //======================================================================
@@ -194,7 +192,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return Render(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -212,7 +210,7 @@ func (w *Widget) DoubleClickDelay() time.Duration {
 
 //======================================================================
 
-func SubWidgetSize(w IWidget, size interface{}, focus gowid.Selector, app gowid.IApp) gowid.IRenderSize {
+func SubWidgetSize(w IWidget, size any, focus gowid.Selector, app gowid.IApp) gowid.IRenderSize {
 	cols, haveCols := size.(gowid.IColumns)
 	rows, haveRows := size.(gowid.IRows)
 	switch {
@@ -235,7 +233,7 @@ func RenderSize(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gow
 			boxWidth = bsz.Columns()
 		}
 	}
-	return gowid.RenderBox{boxWidth, boxHeight}
+	return gowid.RenderBox{C: boxWidth, R: boxHeight}
 }
 
 type IClickableIdentityWidget interface {
@@ -243,7 +241,7 @@ type IClickableIdentityWidget interface {
 	gowid.IIdentity
 }
 
-func UserInput(w IClickableIdentityWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IClickableIdentityWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := false
 	switch ev := ev.(type) {
 	case *tcell.EventMouse:
@@ -285,7 +283,7 @@ func UserInput(w IClickableIdentityWidget, ev interface{}, size gowid.IRenderSiz
 				}
 			}
 		} else {
-			if ev.Key() == tcell.KeyEnter || (ev.Key() == tcell.KeyRune && ev.Rune() == ' ') {
+			if ev.Key() == tcell.KeyEnter || (ev.Key() == tcell.KeyRune && ev.Str() == " ") {
 				w.Click(app)
 				res = true
 			}

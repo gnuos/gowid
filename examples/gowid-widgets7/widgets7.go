@@ -7,11 +7,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/list"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/list"
 	log "github.com/sirupsen/logrus"
 )
 

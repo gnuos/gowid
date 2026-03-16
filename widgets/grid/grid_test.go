@@ -7,11 +7,11 @@ package grid
 import (
 	"testing"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/text"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,7 +41,7 @@ func TestGridFlow(t *testing.T) {
 
 	assert.Equal(t, gf.Focus(), 0)
 
-	evspace := tcell.NewEventKey(tcell.KeyRune, ' ', tcell.ModNone)
+	evspace := tcell.NewEventKey(tcell.KeyRune, " ", tcell.ModNone)
 	evmdown := tcell.NewEventMouse(1, 1, tcell.WheelDown, 0)
 	evmup := tcell.NewEventMouse(1, 1, tcell.WheelUp, 0)
 	evmright := tcell.NewEventMouse(1, 1, tcell.WheelRight, 0)
@@ -49,10 +49,11 @@ func TestGridFlow(t *testing.T) {
 
 	cbcalled := false
 
-	gf.OnFocusChanged(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		assert.Equal(t, w, gf)
-		cbcalled = true
-	}})
+	gf.OnFocusChanged(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			assert.Equal(t, w, gf)
+			cbcalled = true
+		}})
 
 	gf.UserInput(gwtest.CursorRight(), sz, gowid.Focused, gwtest.D)
 	assert.Equal(t, 1, gf.Focus())

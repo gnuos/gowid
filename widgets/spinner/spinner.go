@@ -6,20 +6,17 @@
 package spinner
 
 import (
-	"fmt"
 	"runtime"
-	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 )
 
 //======================================================================
 
 // IWidget - if your widget implements progress.IWidget, you will be able to render it using the
 // progress.Render() function.
-//
 type IWidget interface {
 	gowid.IWidget
 	// Text should return the string to be displayed inside the progress bar e.g. "50%"
@@ -41,8 +38,6 @@ type Widget struct {
 	enabled   bool
 	label     string
 	idx       int
-	ticker    *time.Ticker
-	stopChan  chan struct{}
 	styler    gowid.ICellStyler
 	Callbacks *gowid.Callbacks
 	gowid.RejectUserInput
@@ -82,7 +77,7 @@ func New(args Options) *Widget {
 }
 
 func (w *Widget) String() string {
-	return fmt.Sprintf("spinner")
+	return "spinner"
 }
 
 func (w *Widget) Text() string {

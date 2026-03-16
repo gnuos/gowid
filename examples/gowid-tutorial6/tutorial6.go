@@ -7,13 +7,13 @@ package main
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/list"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/list"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -45,7 +45,7 @@ func NewConversationWidget() *ConversationWidget {
 	return &ConversationWidget{lb}
 }
 
-func (w *ConversationWidget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *ConversationWidget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := false
 	if evk, ok := ev.(*tcell.EventKey); ok && evk.Key() == tcell.KeyEnter {
 		res = true

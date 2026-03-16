@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/list"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/list"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -32,7 +32,7 @@ func TestBoxadapter1(t *testing.T) {
 	c1 = lb.Render(gowid.RenderFlowWith{C: 6}, gowid.Focused, gwtest.D)
 	assert.Equal(t, "aaaaaa\naaaaaa\naaaaaa\naa    \nbbbbbb\nbbbbbb\nbbbbbb\nbb    ", c1.String())
 
-	evx := tcell.NewEventKey(tcell.KeyRune, 'x', tcell.ModNone)
+	evx := tcell.NewEventKey(tcell.KeyRune, "x", tcell.ModNone)
 	evlmx1y0 := tcell.NewEventMouse(1, 0, tcell.Button1, 0)
 	evlmx1y4 := tcell.NewEventMouse(1, 4, tcell.Button1, 0)
 	evlmx2y2 := tcell.NewEventMouse(2, 2, tcell.Button1, 0)
@@ -60,9 +60,9 @@ func TestBoxadapter1(t *testing.T) {
 	}, "\n"), c1.String())
 
 	lb.UserInput(evlmx1y4, sz, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	lb.UserInput(evnonex1y4, sz, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{false, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: false, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	lb.UserInput(evx, sz, gowid.Focused, gwtest.D)
 
 	c1 = lb.Render(sz, gowid.Focused, gwtest.D)
@@ -98,9 +98,9 @@ func TestBoxadapter1(t *testing.T) {
 	}, "\n"), c2.String())
 
 	lb2.UserInput(evlmx2y2, sz, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	lb2.UserInput(evnonex2y2, sz, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{false, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: false, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	lb2.UserInput(evx, sz, gowid.Focused, gwtest.D)
 
 	c2 = lb2.Render(sz, gowid.Focused, gwtest.D)

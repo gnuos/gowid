@@ -7,11 +7,11 @@ package main
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -20,7 +20,7 @@ type QuestionBox struct {
 	gowid.IWidget
 }
 
-func (w *QuestionBox) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *QuestionBox) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := true
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		switch evk.Key() {

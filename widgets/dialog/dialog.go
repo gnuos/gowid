@@ -8,19 +8,19 @@ package dialog
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/cellmod"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/hpadding"
-	"github.com/gcla/gowid/widgets/overlay"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/shadow"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/cellmod"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/hpadding"
+	"github.com/gnuos/gowid/widgets/overlay"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/shadow"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 )
 
 //======================================================================
@@ -60,7 +60,6 @@ type IMaximizer interface {
 // Widget - represents a modal dialog. The bottom widget is rendered
 // without the focus at full size. The bottom widget is rendered between a
 // horizontal and vertical padding widget set up with the sizes provided.
-//
 type Widget struct {
 	gowid.IWidget
 	Options              Options
@@ -168,16 +167,17 @@ func New(content gowid.IWidget, opts ...Options) *Widget {
 
 	colsW := make([]gowid.IContainerWidget, 0)
 
-	pileW := make([]interface{}, 0)
-	wrapper := &gowid.ContainerWidget{content, gowid.RenderWithWeight{W: 1}}
+	pileW := make([]any, 0)
+	wrapper := &gowid.ContainerWidget{IWidget: content, D: gowid.RenderWithWeight{W: 1}}
 	pileW = append(pileW, wrapper)
 
 	if len(opts) > 0 {
 		for i, b := range opts[0].Buttons {
 			bw := button.New(text.New(b.Msg))
 			if b.Action == nil {
-				bw.OnClick(gowid.WidgetCallback{fmt.Sprintf("cb-%d", i),
-					func(app gowid.IApp, widget gowid.IWidget) {
+				bw.OnClick(gowid.WidgetCallback{
+					Name: fmt.Sprintf("cb-%d", i),
+					WidgetChangedFunction: func(app gowid.IApp, widget gowid.IWidget) {
 						res.Close(app)
 					}})
 			} else {
@@ -185,12 +185,12 @@ func New(content gowid.IWidget, opts ...Options) *Widget {
 			}
 			colsW = append(colsW,
 				&gowid.ContainerWidget{
-					hpadding.New(
+					IWidget: hpadding.New(
 						styled.NewExt(bw, backgroundStyle, buttonStyle),
 						gowid.HAlignMiddle{},
 						gowid.RenderFixed{},
 					),
-					gowid.RenderWithWeight{W: 1},
+					D: gowid.RenderWithWeight{W: 1},
 				},
 			)
 		}
@@ -247,7 +247,7 @@ func New(content gowid.IWidget, opts ...Options) *Widget {
 }
 
 func (w *Widget) String() string {
-	return fmt.Sprintf("dialog")
+	return "dialog"
 }
 
 func (w *Widget) SubWidget() gowid.IWidget {
@@ -259,8 +259,9 @@ func (w *Widget) SetSubWidget(inner gowid.IWidget, app gowid.IApp) {
 }
 
 func (w *Widget) GetNoFunction() gowid.IWidgetChangedCallback {
-	return gowid.WidgetCallback{"no",
-		func(app gowid.IApp, widget gowid.IWidget) {
+	return gowid.WidgetCallback{
+		Name: "no",
+		WidgetChangedFunction: func(app gowid.IApp, widget gowid.IWidget) {
 			w.Close(app)
 		}}
 }
@@ -336,7 +337,7 @@ func (w *Widget) RemoveOnOpenClose(f gowid.IIdentity) {
 	gowid.RemoveWidgetCallback(w.Callbacks, OpenCloseCB{}, f)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -350,7 +351,6 @@ func (w *Widget) Close(app gowid.IApp) {
 
 // Open the dialog at the top-level of the widget hierarchy which is the App - it itself
 // is an IComposite
-//
 func (w *Widget) OpenGlobally(width gowid.IWidgetDimension, app gowid.IApp) {
 	w.Open(app, width, app)
 }
@@ -420,7 +420,7 @@ func OpenExt(w IOpenExt, container gowid.ISettableComposite, width gowid.IWidget
 	w.SetOpen(true, app)
 }
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	var res bool
 	if w.IsOpen() {
 		if evk, ok := ev.(*tcell.EventKey); ok {
@@ -438,7 +438,7 @@ func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Se
 		if !res {
 			if evk, ok := ev.(*tcell.EventKey); ok {
 				switch {
-				case evk.Key() == tcell.KeyRune && evk.Rune() == 'z':
+				case evk.Key() == tcell.KeyRune && evk.Str() == "z":
 					if w, ok := w.(IMaximizer); ok {
 						if w.IsMaxed() {
 							w.Unmaximize(app)

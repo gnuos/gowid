@@ -11,22 +11,22 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/dialog"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/holder"
-	"github.com/gcla/gowid/widgets/hpadding"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	"github.com/gcla/gowid/widgets/vscroll"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/alecthomas/kingpin/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/dialog"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/holder"
+	"github.com/gnuos/gowid/widgets/hpadding"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gnuos/gowid/widgets/vscroll"
 	log "github.com/sirupsen/logrus"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 //======================================================================
@@ -56,7 +56,7 @@ func updateStatusBar(message string) {
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	handled := false
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		if evk.Key() == tcell.KeyEsc {
@@ -157,7 +157,7 @@ func (e *EditWithScrollbar) clickDownArrow(app gowid.IApp, w gowid.IWidget) {
 }
 
 // gcdoc - do this so columns navigation e.g. ctrl-f doesn't get passed to columns
-func (w *EditWithScrollbar) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *EditWithScrollbar) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	// Stop these keys moving focus in the columns used by this widget. C-f is used to
 	// open a file.
 	if evk, ok := ev.(*tcell.EventKey); ok {

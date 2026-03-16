@@ -9,16 +9,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
-	"github.com/gcla/gowid/widgets/checkbox"
-	"github.com/gcla/gowid/widgets/disable"
-	"github.com/gcla/gowid/widgets/fixedadapter"
-	"github.com/gcla/gowid/widgets/isselected"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/selectable"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
+	"github.com/gnuos/gowid/widgets/checkbox"
+	"github.com/gnuos/gowid/widgets/disable"
+	"github.com/gnuos/gowid/widgets/fixedadapter"
+	"github.com/gnuos/gowid/widgets/isselected"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/selectable"
+	"github.com/gnuos/gowid/widgets/text"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -63,7 +63,7 @@ func TestListBox2(t *testing.T) {
 	c1 := lb.Render(sz, gowid.NotSelected, gwtest.D)
 	assert.Equal(t, c1.String(), "[ ]   \n[ ]   \n[ ]   \n      ")
 
-	evsp := tcell.NewEventKey(tcell.KeyRune, ' ', tcell.ModNone)
+	evsp := tcell.NewEventKey(tcell.KeyRune, " ", tcell.ModNone)
 	evlm := tcell.NewEventMouse(1, 1, tcell.Button1, 0)
 	evnone := tcell.NewEventMouse(1, 1, tcell.ButtonNone, 0)
 
@@ -76,7 +76,7 @@ func TestListBox2(t *testing.T) {
 	ct.Gotit = false
 	log.Infof("Sending left mouse down at %d,%d", 1, 1)
 	lb.UserInput(evlm, sz, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	log.Infof("Sending left mouse up at %d,%d", 1, 1)
 	lb.UserInput(evnone, sz, gowid.Focused, gwtest.D)
 	gwtest.D.SetLastMouseState(gowid.MouseState{})
@@ -118,7 +118,7 @@ func TestListBox3(t *testing.T) {
 
 	ct.Gotit = false
 	lb.UserInput(evlm, gowid.RenderFixed{}, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	lb.UserInput(evnone, gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	gwtest.D.SetLastMouseState(gowid.MouseState{})
 	assert.Equal(t, ct.Gotit, true)
@@ -146,7 +146,7 @@ func (w *focusWidget) Render(size gowid.IRenderSize, focus gowid.Selector, app g
 	}
 }
 
-func (w *focusWidget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *focusWidget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	if focus.Focus {
 		return w.focus.UserInput(ev, size, focus, app)
 	} else {
@@ -162,7 +162,7 @@ func TestListBox4(t *testing.T) {
 	defer gwtest.ClearTestApp()
 
 	lws := make([]gowid.IWidget, 5)
-	for i := 0; i < len(lws); i++ {
+	for i := range len(lws) {
 		w := text.New(fmt.Sprintf("%d", i))
 		lws[i] = &focusWidget{pile.NewFixed(w, w), w}
 	}
@@ -173,15 +173,15 @@ func TestListBox4(t *testing.T) {
 	c1 := lb.Render(gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	assert.Equal(t, "0\n0\n1\n2\n3\n4", c1.String())
 
-	evpgup := tcell.NewEventKey(tcell.KeyPgUp, ' ', tcell.ModNone)
-	evpgdn := tcell.NewEventKey(tcell.KeyPgDn, ' ', tcell.ModNone)
+	evpgup := tcell.NewEventKey(tcell.KeyPgUp, " ", tcell.ModNone)
+	evpgdn := tcell.NewEventKey(tcell.KeyPgDn, " ", tcell.ModNone)
 
 	// ct.Gotit = false
 	lb.UserInput(gwtest.CursorDown(), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	c1 = lb.Render(gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	assert.Equal(t, "0\n1\n1\n2\n3\n4", c1.String())
 
-	for i := 0; i < len(lws); i++ {
+	for i := range len(lws) {
 		res := lb.UserInput(gwtest.CursorDown(), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 		if i < 3 { // TODO: bug -
 			assert.Equal(t, true, res)
@@ -206,8 +206,8 @@ func TestListBox5(t *testing.T) {
 	defer gwtest.ClearTestApp()
 
 	lws := make([]gowid.IWidget, 0)
-	for i := 0; i < 5; i++ {
-		lws = append(lws, &text.Widget1{i})
+	for i := range 5 {
+		lws = append(lws, &text.Widget1{I: i})
 		lws = append(lws, text.New("-"))
 	}
 
@@ -225,17 +225,17 @@ func TestListBox5(t *testing.T) {
 
 	// Click on a selectable widget, should move
 	lb.UserInput(gwtest.ClickAt(1, 0), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	lb.UserInput(gwtest.ClickUpAt(1, 0), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{false, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: false, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	c1 = lb.Render(gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	assert.Equal(t, "0f\n- \n1 \n- \n2 \n- \n3 \n- \n4 \n- ", c1.String())
 
 	// Click on an unselectable widget, should preserve current state - so no change
 	lb.UserInput(gwtest.ClickAt(1, 3), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	lb.UserInput(gwtest.ClickUpAt(1, 3), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
-	gwtest.D.SetLastMouseState(gowid.MouseState{false, false, false, time.Now()})
+	gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: false, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	c1 = lb.Render(gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	assert.Equal(t, "0f\n- \n1 \n- \n2 \n- \n3 \n- \n4 \n- ", c1.String())
 }
@@ -267,7 +267,7 @@ func TestDisabled1(t *testing.T) {
 	foc := make([]gowid.IWidget, 0)
 	notfoc := make([]gowid.IWidget, 0)
 
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		txtf := text.New(fmt.Sprintf("f%d", i))
 		txtn := text.New(fmt.Sprintf("a%d", i))
 		foc = append(foc, txtf)
@@ -321,7 +321,7 @@ func TestDisabled1(t *testing.T) {
 		evnone := tcell.NewEventMouse(x, y, tcell.ButtonNone, 0)
 
 		lb.UserInput(evlm, fixed, gowid.Focused, gwtest.D)
-		gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+		gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 
 		lb.UserInput(evnone, fixed, gowid.Focused, gwtest.D)
 		gwtest.D.SetLastMouseState(gowid.MouseState{})

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,21 +23,21 @@ func TestVim1(t *testing.T) {
 	for _, kt := range []keytest{
 		{"<Up>", KeyPressUp},
 		{"<Down>", KeyPressDown},
-		{"Z", NewSimpleKeyPress('Z')},
-		{"z", NewSimpleKeyPress('z')},
-		{"<C-f>", NewKeyPress(tcell.KeyRune, 'f', tcell.ModCtrl)},
-		{"<A-|>", NewKeyPress(tcell.KeyRune, '|', tcell.ModAlt)},
-		{"<S-\">", NewKeyPress(tcell.KeyRune, '"', tcell.ModShift)},
-		{"<S-`>", NewKeyPress(tcell.KeyRune, '`', tcell.ModShift)},
-		{"`", NewSimpleKeyPress('`')},
-		{"<Space>", NewSimpleKeyPress(' ')},
+		{"Z", NewSimpleKeyPress("Z")},
+		{"z", NewSimpleKeyPress("z")},
+		{"<C-f>", NewKeyPress(tcell.KeyRune, "f", tcell.ModCtrl)},
+		{"<A-|>", NewKeyPress(tcell.KeyRune, "|", tcell.ModAlt)},
+		{"<S-\">", NewKeyPress(tcell.KeyRune, "\"", tcell.ModShift)},
+		{"<S-`>", NewKeyPress(tcell.KeyRune, "`", tcell.ModShift)},
+		{"`", NewSimpleKeyPress("`")},
+		{"<Space>", NewSimpleKeyPress(" ")},
 		{"<Esc>", KeyPressEscape},
 		{"<Right>", KeyPressRight},
 		{"<PgDn>", KeyPressPgDn},
 		{"<Esc>", KeyPressEscape},
 		{"<F4>", KeyPressF4},
 		{"<F12>", KeyPressF12},
-		{"<Lt>", NewKeyPress(tcell.KeyRune, '<', 0)},
+		{"<Lt>", NewKeyPress(tcell.KeyRune, "<", 0)},
 	} {
 		res := VimStringToKeys(kt.str)
 		assert.Equal(t, 1, len(res))

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )

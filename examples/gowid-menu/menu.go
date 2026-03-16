@@ -7,40 +7,36 @@ package main
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/checkbox"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/hpadding"
-	"github.com/gcla/gowid/widgets/list"
-	"github.com/gcla/gowid/widgets/menu"
-	"github.com/gcla/gowid/widgets/overlay"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	"github.com/gcla/gowid/widgets/vpadding"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/checkbox"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/hpadding"
+	"github.com/gnuos/gowid/widgets/list"
+	"github.com/gnuos/gowid/widgets/menu"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gnuos/gowid/widgets/vpadding"
 	log "github.com/sirupsen/logrus"
 )
 
 //======================================================================
 
-var ov *overlay.Widget
-
 var menu1 *menu.Widget
 var menu2 *menu.Widget
-var ovh, ovw int = 50, 50
 
 //======================================================================
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	handled := false
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		handled = true
-		if evk.Key() == tcell.KeyCtrlC || evk.Rune() == 'q' || evk.Rune() == 'Q' {
+		if evk.Key() == tcell.KeyCtrlC || evk.Str() == "q" || evk.Str() == "Q" {
 			app.Quit()
 		} else if evk.Key() == tcell.KeyEsc {
 			if !menu1.IsOpen() {
@@ -58,7 +54,6 @@ func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
 //======================================================================
 
 func main() {
-
 	f := examples.RedirectLogger("menu.log")
 	defer f.Close()
 
@@ -72,10 +67,10 @@ func main() {
 
 	menu2Widgets := make([]gowid.IWidget, 0)
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
 		clickme := button.New(text.New(fmt.Sprintf("subwidget %d", i)))
 		clickmeStyled := styled.NewInvertedFocus(clickme, gowid.MakePaletteRef("green"))
-		clickme.OnClick(gowid.WidgetCallback{gowid.ClickCB{}, func(app gowid.IApp, target gowid.IWidget) {
+		clickme.OnClick(gowid.WidgetCallback{Name: gowid.ClickCB{}, WidgetChangedFunction: func(app gowid.IApp, target gowid.IWidget) {
 			log.Infof("SUBMENU button CLICKED")
 		}})
 		cols := columns.New([]gowid.IContainerWidget{
@@ -89,7 +84,7 @@ func main() {
 	menuListBox2 := styled.New(list.New(walker2), gowid.MakePaletteRef("green"))
 
 	menu1Widgets := make([]gowid.IWidget, 0)
-	for i := 0; i < 40; i++ {
+	for i := range 40 {
 		content := text.NewContent([]text.ContentSegment{
 			text.StringContent(fmt.Sprintf("widget %d", i)),
 		})
@@ -98,10 +93,10 @@ func main() {
 		btnSite := menu.NewSite()
 		checkme := checkbox.New(false)
 		checkmeStyled := styled.NewInvertedFocus(checkme, gowid.MakePaletteRef("red"))
-		checkme.OnClick(gowid.WidgetCallback{gowid.ClickCB{}, func(app gowid.IApp, target gowid.IWidget) {
+		checkme.OnClick(gowid.WidgetCallback{Name: gowid.ClickCB{}, WidgetChangedFunction: func(app gowid.IApp, target gowid.IWidget) {
 			log.Infof("MENU checkbox CLICKED")
 		}})
-		btn.OnClick(gowid.WidgetCallback{gowid.ClickCB{}, func(app gowid.IApp, target gowid.IWidget) {
+		btn.OnClick(gowid.WidgetCallback{Name: gowid.ClickCB{}, WidgetChangedFunction: func(app gowid.IApp, target gowid.IWidget) {
 			if menu2.IsOpen() {
 				menu2.Close(app)
 			} else {
@@ -125,11 +120,11 @@ func main() {
 
 	clickToOpenWidgets := make([]gowid.IContainerWidget, 0)
 	// Make the on screen buttons to click to open the menu
-	for i := 0; i < 20; i++ {
+	for i := range 20 {
 		btn := button.New(text.New(fmt.Sprintf("clickety%d", i)))
 		btnStyled := styled.NewExt(btn, gowid.MakePaletteRef("red"), gowid.MakePaletteRef("white"))
 		btnSite := menu.NewSite(menu.SiteOptions{YOffset: 1})
-		btn.OnClick(gowid.WidgetCallback{gowid.ClickCB{}, func(app gowid.IApp, target gowid.IWidget) {
+		btn.OnClick(gowid.WidgetCallback{Name: gowid.ClickCB{}, WidgetChangedFunction: func(app gowid.IApp, target gowid.IWidget) {
 			menu1.Open(btnSite, app)
 		}})
 		clickToOpenWidgets = append(clickToOpenWidgets, &gowid.ContainerWidget{IWidget: btnSite, D: fixed})

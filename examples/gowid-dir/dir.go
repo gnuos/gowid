@@ -6,24 +6,23 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"syscall"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/boxadapter"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/list"
-	"github.com/gcla/gowid/widgets/selectable"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	"github.com/gcla/gowid/widgets/tree"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/alecthomas/kingpin/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/boxadapter"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/list"
+	"github.com/gnuos/gowid/widgets/selectable"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gnuos/gowid/widgets/tree"
 	log "github.com/sirupsen/logrus"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 var pos *tree.TreePos
@@ -31,8 +30,6 @@ var tb *list.Widget
 var parent1 *DirTree
 var walker *tree.TreeWalker
 var dirname = kingpin.Arg("dir", "Directory to scan.").Required().String()
-
-var expandedCache map[string]int
 
 //======================================================================
 
@@ -87,7 +84,7 @@ const (
 type DirIterator struct {
 	init   bool
 	parent tree.ICollapsible
-	files  []os.FileInfo
+	files  []os.DirEntry
 	pos    int
 	cache  *map[string]int // shared - track whether any path is collapsed or expanded
 }
@@ -99,7 +96,7 @@ func (d *DirIterator) FullPath() string {
 func (d *DirIterator) Next() bool {
 	if !d.init {
 		// Ignore the error because if there's a problem, we'll simply have files thus no children
-		d.files, _ = ioutil.ReadDir(d.parent.(*DirTree).FullPath())
+		d.files, _ = os.ReadDir(d.parent.(*DirTree).FullPath())
 		d.init = true
 	}
 	d.pos++
@@ -204,17 +201,16 @@ func (d *DirTree) SetCollapsed(app gowid.IApp, isCollapsed bool) {
 // Click() method will be called. We need to provide a wrapper for UserInput(), else UserInput() will come
 // from the embedded *button.Widget, which will then result in the IButtonWidget interface being
 // built from *button.Widget and not DirButton.
-//
 type DirButton struct {
 	*button.Widget
 	id string
 }
 
-func (d *DirButton) ID() interface{} {
+func (d *DirButton) ID() any {
 	return d.id
 }
 
-func (d *DirButton) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (d *DirButton) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return button.UserInput(d, ev, size, focus, app)
 }
 
@@ -243,7 +239,7 @@ func MakeDecoration(pos tree.IPos, tr tree.IModel, wmaker tree.IWidgetMaker) gow
 			// a separate button depending on whether or not the tree is collapsed, it will
 			// correctly work when the DecoratorMaker is caching the widgets i.e. it will
 			// collapse or expand even when the widget is rendered from the cache
-			dirButton.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
+			dirButton.OnClick(gowid.WidgetCallback{Name: "cb", WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
 				// Note that I don't change the button widget itself ([+]/[-]) - just the underlying model, from which
 				// the widget will be recreated
 				app.Run(gowid.RunFunction(func(app gowid.IApp) {
@@ -312,20 +308,20 @@ func MakeWidget(pos tree.IPos, tr tree.IModel) gowid.IWidget {
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	handled := false
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		handled = true
-		if evk.Key() == tcell.KeyCtrlC || evk.Rune() == 'q' || evk.Rune() == 'Q' {
+		if evk.Key() == tcell.KeyCtrlC || evk.Str() == "q" || evk.Str() == "Q" {
 			app.Quit()
-		} else if evk.Rune() == 'x' {
+		} else if evk.Str() == "x" {
 			pos := walker.Focus()
 			tpos := pos.(tree.IPos)
 			itree := tpos.GetSubStructure(parent1)
 			if ctree, ok := itree.(tree.ICollapsible); ok {
 				ctree.SetCollapsed(app, true)
 			}
-		} else if evk.Rune() == 'z' {
+		} else if evk.Str() == "z" {
 			pos := walker.Focus()
 			tpos := pos.(tree.IPos)
 			itree := tpos.GetSubStructure(parent1)
@@ -342,7 +338,6 @@ func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
 //======================================================================
 
 func main() {
-
 	kingpin.Parse()
 
 	if _, err := os.Stat(*dirname); os.IsNotExist(err) {

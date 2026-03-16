@@ -8,7 +8,7 @@ package selectable
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
+	"github.com/gnuos/gowid"
 )
 
 //======================================================================

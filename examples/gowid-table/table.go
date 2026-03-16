@@ -14,27 +14,27 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gcla/gowid/examples"
-	_ "github.com/gcla/gowid/examples/gowid-table/statik"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"github.com/alecthomas/kingpin/v2"
+	"github.com/gnuos/gowid/examples"
+	_ "github.com/gnuos/gowid/examples/gowid-table/statik"
 
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 	"github.com/rakyll/statik/fs"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/fill"
-	"github.com/gcla/gowid/widgets/table"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/fill"
+	"github.com/gnuos/gowid/widgets/table"
 )
 
 //======================================================================
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	if evk, ok := ev.(*tcell.EventKey); ok {
-		if evk.Key() == tcell.KeyCtrlC || evk.Rune() == 'q' || evk.Rune() == 'Q' {
+		if evk.Key() == tcell.KeyCtrlC || evk.Str() == "q" || evk.Str() == "Q" {
 			app.Quit()
 			return true
 		}
@@ -104,8 +104,7 @@ func main() {
 		model.Comparators[6] = table.FloatCompare{}
 	} else {
 		if *colTypes != "" {
-			types := strings.Split(*colTypes, ",")
-			for _, typ := range types {
+			for typ := range strings.SplitSeq(*colTypes, ",") {
 				colPlusType := strings.Split(typ, ":")
 				if len(colPlusType) == 2 {
 					if colNum, err := strconv.Atoi(colPlusType[0]); err == nil {
@@ -117,7 +116,7 @@ func main() {
 						case "float":
 							model.Comparators[colNum] = table.FloatCompare{}
 						default:
-							panic(fmt.Errorf("Did not recognize column type %v", typ))
+							panic(fmt.Errorf("did not recognize column type %v", typ))
 						}
 					}
 				}

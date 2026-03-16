@@ -10,13 +10,13 @@ import (
 	"strconv"
 
 	"github.com/araddon/dateparse"
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/isselected"
-	"github.com/gcla/gowid/widgets/list"
-	"github.com/gcla/gowid/widgets/pile"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/isselected"
+	"github.com/gnuos/gowid/widgets/list"
+	"github.com/gnuos/gowid/widgets/pile"
 	lru "github.com/hashicorp/golang-lru"
 )
 
@@ -31,14 +31,14 @@ import (
 // can then cache the rendered row using the RowId as a lookup field. Even
 // if that row moves around in the order rendered, it can be found in the
 // cache.
-type RowId int
+type RowID int
 
 // IModel is implemented by any type which can provide arrays of
 // widgets for a given table row, and optionally header widgets.
 type IModel interface {
 	Columns() int
-	RowIdentifier(row int) (RowId, bool)   // return a unique ID for row
-	CellWidgets(row RowId) []gowid.IWidget // nil means EOD
+	RowIdentifier(row int) (RowID, bool)   // return a unique ID for row
+	CellWidgets(row RowID) []gowid.IWidget // nil means EOD
 	HeaderWidgets() []gowid.IWidget        // nil means no headers
 	VerticalSeparator() gowid.IWidget
 	HorizontalSeparator() gowid.IWidget
@@ -47,7 +47,7 @@ type IModel interface {
 }
 
 type IInvertible interface {
-	IdentifierToRow(rowid RowId) (int, bool)
+	IdentifierToRow(rowid RowID) (int, bool)
 }
 
 type IMakeHeader interface {
@@ -162,7 +162,7 @@ func (l *ListWithPreferedColumn) SetPreferedPosition(col int, app gowid.IApp) {
 }
 
 func (w *ListWithPreferedColumn) String() string {
-	return fmt.Sprintf("listc")
+	return "listc"
 }
 
 //======================================================================
@@ -205,7 +205,6 @@ var _ gowid.IRenderMax = widthOneHeightMax
 
 // Widget wraps a widget and aligns it vertically according to the supplied arguments. The wrapped
 // widget can be aligned to the top, bottom or middle, and can be provided with a specific height in #lines.
-//
 type Widget struct {
 	wrapper          *pile.Widget
 	header           gowid.IWidget
@@ -282,7 +281,7 @@ func New(model IModel, opts ...Options) *Widget {
 
 var _ gowid.IWidget = (*Widget)(nil)
 
-func (w *Widget) update(listw *ListWithPreferedColumn, row int, model IModel, opt Options) {
+func (w *Widget) update(listw *ListWithPreferedColumn, _ int, model IModel, opt Options) {
 	// Save whether we were in the header or the packet lists
 	pf := -1
 	hf := -1
@@ -320,13 +319,13 @@ func (w *Widget) update(listw *ListWithPreferedColumn, row int, model IModel, op
 	var flowTableDivider *gowid.ContainerWidget
 
 	if model.HorizontalSeparator() != nil {
-		flowHorzDivider = &gowid.ContainerWidget{model.HorizontalSeparator(), gowid.RenderFlow{}}
+		flowHorzDivider = &gowid.ContainerWidget{IWidget: model.HorizontalSeparator(), D: gowid.RenderFlow{}}
 	}
 	if model.VerticalSeparator() != nil {
-		flowVertDivider = &gowid.ContainerWidget{model.VerticalSeparator(), widthOneHeightMax}
+		flowVertDivider = &gowid.ContainerWidget{IWidget: model.VerticalSeparator(), D: widthOneHeightMax}
 	}
 	if model.HeaderSeparator() != nil {
-		flowTableDivider = &gowid.ContainerWidget{model.HeaderSeparator(), gowid.RenderFlow{}}
+		flowTableDivider = &gowid.ContainerWidget{IWidget: model.HeaderSeparator(), D: gowid.RenderFlow{}}
 	}
 
 	if flowTableDivider != nil {
@@ -334,7 +333,7 @@ func (w *Widget) update(listw *ListWithPreferedColumn, row int, model IModel, op
 	}
 	hws := model.HeaderWidgets() // widgets
 	var hw *columns.Widget
-	if hws != nil && len(hws) > 0 {
+	if len(hws) > 0 {
 		var hw2 gowid.IWidget
 		if nm, ok := model.(IMakeHeader); ok {
 			hw2 = nm.HeaderWidget(hws, hf)
@@ -345,11 +344,11 @@ func (w *Widget) update(listw *ListWithPreferedColumn, row int, model IModel, op
 			}
 
 			for i, w := range hws {
-				var dim gowid.IWidgetDimension = gowid.RenderWithWeight{1}
+				var dim gowid.IWidgetDimension = gowid.RenderWithWeight{W: 1}
 				if model.Widths() != nil && i < len(model.Widths()) {
 					dim = model.Widths()[i]
 				}
-				cws = append(cws, &gowid.ContainerWidget{w, dim})
+				cws = append(cws, &gowid.ContainerWidget{IWidget: w, D: dim})
 				if flowVertDivider != nil {
 					cws = append(cws, flowVertDivider)
 				}
@@ -359,14 +358,14 @@ func (w *Widget) update(listw *ListWithPreferedColumn, row int, model IModel, op
 			})
 			hw2 = hw
 		}
-		pileWidgets = append(pileWidgets, &gowid.ContainerWidget{hw2, gowid.RenderFlow{}})
+		pileWidgets = append(pileWidgets, &gowid.ContainerWidget{IWidget: hw2, D: gowid.RenderFlow{}})
 		if flowTableDivider != nil {
 			pileWidgets = append(pileWidgets, flowTableDivider)
 		}
 	}
 
 	// Fill in Widget later once constructed.
-	pileWidgets = append(pileWidgets, &gowid.ContainerWidget{listw, gowid.RenderWithWeight{1}})
+	pileWidgets = append(pileWidgets, &gowid.ContainerWidget{IWidget: listw, D: gowid.RenderWithWeight{W: 1}})
 
 	// Construct the table first, then set the list later. That's because when the
 	// pile is constructed, it tries to find the first selectable widget; but lw's
@@ -513,7 +512,7 @@ func (w *Widget) HorzDivider() gowid.IWidget {
 }
 
 func (w *Widget) String() string {
-	return fmt.Sprintf("table")
+	return "table"
 }
 
 func (w *Widget) RenderSize(size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderBox {
@@ -531,7 +530,7 @@ func (w *Widget) SetFocusOnData(app gowid.IApp) bool {
 	return cur != w.wrapper.Focus()
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	oldpos, olderr := w.FocusXY()
 	res := w.wrapper.UserInput(ev, size, focus, app)
 	newpos, newerr := w.FocusXY()
@@ -546,26 +545,26 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 }
 
 func (w *Widget) Up(lines int, size gowid.IRenderSize, app gowid.IApp) {
-	for i := 0; i < lines; i++ {
-		w.wrapper.UserInput(tcell.NewEventKey(tcell.KeyUp, ' ', tcell.ModNone), size, gowid.Focused, app)
+	for range lines {
+		w.wrapper.UserInput(tcell.NewEventKey(tcell.KeyUp, " ", tcell.ModNone), size, gowid.Focused, app)
 	}
 }
 
 func (w *Widget) Down(lines int, size gowid.IRenderSize, app gowid.IApp) {
-	for i := 0; i < lines; i++ {
-		w.wrapper.UserInput(tcell.NewEventKey(tcell.KeyDown, ' ', tcell.ModNone), size, gowid.Focused, app)
+	for range lines {
+		w.wrapper.UserInput(tcell.NewEventKey(tcell.KeyDown, " ", tcell.ModNone), size, gowid.Focused, app)
 	}
 }
 
 func (w *Widget) UpPage(num int, size gowid.IRenderSize, app gowid.IApp) {
-	for i := 0; i < num; i++ {
-		w.wrapper.UserInput(tcell.NewEventKey(tcell.KeyPgUp, ' ', tcell.ModNone), size, gowid.Focused, app)
+	for range num {
+		w.wrapper.UserInput(tcell.NewEventKey(tcell.KeyPgUp, " ", tcell.ModNone), size, gowid.Focused, app)
 	}
 }
 
 func (w *Widget) DownPage(num int, size gowid.IRenderSize, app gowid.IApp) {
-	for i := 0; i < num; i++ {
-		w.wrapper.UserInput(tcell.NewEventKey(tcell.KeyPgDn, ' ', tcell.ModNone), size, gowid.Focused, app)
+	for range num {
+		w.wrapper.UserInput(tcell.NewEventKey(tcell.KeyPgDn, " ", tcell.ModNone), size, gowid.Focused, app)
 	}
 }
 
@@ -620,11 +619,11 @@ func RowToWidget(t IRowToWidget, ws []gowid.IWidget) gowid.IWidget {
 			cws = append(cws, t.VertDivider())
 		}
 		for i, w := range ws {
-			var dim gowid.IWidgetDimension = gowid.RenderWithWeight{1}
+			var dim gowid.IWidgetDimension = gowid.RenderWithWeight{W: 1}
 			if t.Model().Widths() != nil && i < len(t.Model().Widths()) {
 				dim = t.Model().Widths()[i]
 			}
-			cws = append(cws, &gowid.ContainerWidget{w, dim})
+			cws = append(cws, &gowid.ContainerWidget{IWidget: w, D: dim})
 			if t.VertDivider() != nil {
 				cws = append(cws, t.VertDivider())
 			}
@@ -737,7 +736,7 @@ func (t *Widget) SetFocus(pos list.IWalkerPosition, app gowid.IApp) {
 // In order to implement list.IWalker
 func SetFocus(t ISetFocus, pos list.IWalkerPosition) {
 	if t2, ok := pos.(Position); !ok {
-		panic(fmt.Errorf("Invalid position %v passed to SetFocus", pos))
+		panic(fmt.Errorf("invalid position %v passed to SetFocus", pos))
 	} else {
 		t.SetCurrentRow(t2)
 	}
@@ -747,7 +746,7 @@ func SetFocus(t ISetFocus, pos list.IWalkerPosition) {
 // list.IWalker
 func (t *Widget) Next(ipos list.IWalkerPosition) list.IWalkerPosition {
 	if pos, ok := ipos.(Position); !ok {
-		panic(fmt.Errorf("Invalid position %v passed to Next", ipos))
+		panic(fmt.Errorf("invalid position %v passed to Next", ipos))
 	} else {
 		npos := int(pos) + 1
 		return Position(npos)
@@ -758,7 +757,7 @@ func (t *Widget) Next(ipos list.IWalkerPosition) list.IWalkerPosition {
 // list.IWalker
 func (t *Widget) Previous(ipos list.IWalkerPosition) list.IWalkerPosition {
 	if pos, ok := ipos.(Position); !ok {
-		panic(fmt.Errorf("Invalid position %v passed to Prev", ipos))
+		panic(fmt.Errorf("invalid position %v passed to Prev", ipos))
 	} else {
 		ppos := int(pos) - 1
 		return Position(ppos)

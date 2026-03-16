@@ -9,7 +9,7 @@ package gowid
 import (
 	"os"
 
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 //======================================================================
@@ -20,7 +20,7 @@ func tcellScreen(ttys string) (tcell.Screen, error) {
 
 	tty, err = tcell.NewDevTtyFromDev(bestTty(ttys))
 	if err != nil {
-		return nil, WithKVs(err, map[string]interface{}{"tty": ttys})
+		return nil, WithKVs(err, map[string]any{"tty": ttys})
 	}
 
 	return tcell.NewTerminfoScreenFromTty(tty)

@@ -6,11 +6,11 @@ package gwtest
 import (
 	"testing"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/styled"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/styled"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,17 +33,17 @@ func Test1(t *testing.T) {
 
 	p1 := pile.New([]gowid.IContainerWidget{ct1, cc1, cw3})
 	assert.Equal(t, 0, p1.Focus())
-	assert.Equal(t, gowid.FocusPath(p1), []interface{}{0})
+	assert.Equal(t, gowid.FocusPath(p1), []any{0})
 
 	p1.SetFocus(D, 1)
 	assert.Equal(t, 1, p1.Focus())
-	assert.Equal(t, gowid.FocusPath(p1), []interface{}{1, 2})
+	assert.Equal(t, gowid.FocusPath(p1), []any{1, 2})
 
 	p1.SetFocus(D, 2)
 	assert.Equal(t, 2, p1.Focus())
-	assert.Equal(t, gowid.FocusPath(p1), []interface{}{2, 1})
+	assert.Equal(t, gowid.FocusPath(p1), []any{2, 1})
 
-	r := gowid.SetFocusPath(p1, []interface{}{0, 4, 5}, D)
+	r := gowid.SetFocusPath(p1, []any{0, 4, 5}, D)
 	assert.Equal(t, false, r.Succeeded)
 	assert.Equal(t, 1, r.FailedLevel)
 	assert.Equal(t, 0, p1.Focus())
@@ -51,19 +51,19 @@ func Test1(t *testing.T) {
 	p1.SetFocus(D, 2)
 	assert.Equal(t, 2, p1.Focus())
 
-	r = gowid.SetFocusPath(p1, []interface{}{0}, D)
+	r = gowid.SetFocusPath(p1, []any{0}, D)
 	assert.Equal(t, true, r.Succeeded)
 	assert.Equal(t, 0, p1.Focus())
 
 	c1.SetFocus(D, 2)
 	assert.Equal(t, 2, c1.Focus())
 
-	r = gowid.SetFocusPath(p1, []interface{}{1}, D)
+	r = gowid.SetFocusPath(p1, []any{1}, D)
 	assert.Equal(t, true, r.Succeeded)
 	assert.Equal(t, 1, p1.Focus())
 	assert.Equal(t, 2, c1.Focus())
 
-	r = gowid.SetFocusPath(p1, []interface{}{1, 0}, D)
+	r = gowid.SetFocusPath(p1, []any{1, 0}, D)
 	assert.Equal(t, true, r.Succeeded)
 	assert.Equal(t, 1, p1.Focus())
 	assert.Equal(t, 0, c1.Focus())
@@ -71,7 +71,7 @@ func Test1(t *testing.T) {
 	c2.SetFocus(D, 1)
 	assert.Equal(t, 1, c2.Focus())
 
-	r = gowid.SetFocusPath(p1, []interface{}{2, 0}, D)
+	r = gowid.SetFocusPath(p1, []any{2, 0}, D)
 	assert.Equal(t, true, r.Succeeded)
 	assert.Equal(t, 2, p1.Focus())
 	assert.Equal(t, 0, c2.Focus())

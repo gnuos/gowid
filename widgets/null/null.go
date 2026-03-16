@@ -6,9 +6,7 @@
 package null
 
 import (
-	"fmt"
-
-	"github.com/gcla/gowid"
+	"github.com/gnuos/gowid"
 )
 
 //======================================================================
@@ -25,7 +23,7 @@ func (w *Widget) Selectable() bool {
 	return false
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return false
 }
 
@@ -49,7 +47,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 }
 
 func (w *Widget) String() string {
-	return fmt.Sprintf("null")
+	return "null"
 }
 
 //======================================================================

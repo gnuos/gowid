@@ -9,9 +9,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/widgets/fill"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/widgets/fill"
 )
 
 //======================================================================
@@ -28,7 +28,6 @@ type IWidget interface {
 
 // Widget wraps a widget and aligns it vertically according to the supplied arguments. The wrapped
 // widget can be aligned to the top, bottom or middle, and can be provided with a specific height in #lines.
-//
 type Widget struct {
 	gowid.IWidget
 	alignment gowid.IVAlignment
@@ -111,7 +110,6 @@ func (w *Widget) SetHeight(i gowid.IWidgetDimension, app gowid.IApp) {
 // render to fill the space given to it, rather than risking truncation. If
 // the subwidget cannot render in Box mode, then wrap it in a
 // FlowToBoxWidget first.
-//
 func (w *Widget) SubWidgetSize(size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderSize {
 	return SubWidgetSize(w, size, focus, app)
 }
@@ -120,7 +118,7 @@ func (w *Widget) RenderSize(size gowid.IRenderSize, focus gowid.Selector, app go
 	return gowid.CalculateRenderSizeFallback(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -180,7 +178,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 		case gowid.IRenderWithUnits:
 			rowsToUseInResult = w.Height().(gowid.IRenderWithUnits).Units()
 		default:
-			panic(fmt.Errorf("This spec %v of type %T cannot be used in flow mode for %T",
+			panic(fmt.Errorf("this spec %v of type %T cannot be used in flow mode for %T",
 				w.Height(), w.Height(), w))
 		}
 	default:
@@ -238,7 +236,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 		}
 
 	default:
-		panic(errors.New("Invalid vertical alignment setting"))
+		panic(errors.New("invalid vertical alignment setting"))
 	}
 
 	// The embedded widget might have rendered with a different width
@@ -247,7 +245,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 	return subWidgetCanvas
 }
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 
 	subSize := w.SubWidgetSize(size, focus, app)
 	subWidgetBox := w.SubWidget().RenderSize(subSize, focus, app)

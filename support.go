@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gcla/gowid/gwutil"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid/gwutil"
 	"github.com/pkg/errors"
 )
 
@@ -29,14 +29,13 @@ type IColumns interface {
 // This is the empty interface, and only serves as a placeholder at the moment. In
 // practise, actual rendering sizes will be determined by an IFlowDimension, IBoxDimension
 // or an IFixedDimension
-type IRenderSize interface{}
+type IRenderSize any
 
 //======================================================================
 
 // Widgets that are used in containers such as Pile or Columns must implement
 // this interface. It specifies how each subwidget of the container should be
 // rendered.
-//
 type IWidgetDimension interface {
 	ImplementsWidgetDimension() // This exists as a marker so that IWidgetDimension is not empty, meaning satisfied by any struct.
 }
@@ -282,7 +281,7 @@ func (e DimensionError) Error() string {
 //======================================================================
 
 type WidgetSizeError struct {
-	Widget   interface{}
+	Widget   any
 	Size     IRenderSize
 	Required string // in case I only need an interface - not sure how to capture it and not concrete type
 }
@@ -399,7 +398,6 @@ func (s Selector) String() string {
 // UserInput() calls depending on the result of SelectChild() - if
 // focus.Selected is set, then a styling widget can change the look of the
 // widget appropriately.
-//
 type ISelectChild interface {
 	SelectChild(Selector) bool // Whether or not this widget will set focus.Selected for its selected child
 }
@@ -429,11 +427,10 @@ type ISelectChild interface {
 // needed because the widget might have to pass the event down to children
 // widgets, and the correct one may depend on the coordinates of a mouse
 // click relative to the dimensions of the widget itself.
-//
 type IWidget interface {
 	Render(size IRenderSize, focus Selector, app IApp) ICanvas
 	RenderSize(size IRenderSize, focus Selector, app IApp) IRenderBox
-	UserInput(ev interface{}, size IRenderSize, focus Selector, app IApp) bool
+	UserInput(ev any, size IRenderSize, focus Selector, app IApp) bool
 	Selectable() bool
 }
 
@@ -443,16 +440,14 @@ type IWidget interface {
 // not necessarily be the same object (i.e. rebuilt widget hierarchy in
 // between). Also used to name callbacks so they can be removed (since
 // function objects can't be compared)
-//
 type IIdentity interface {
-	ID() interface{}
+	ID() any
 }
 
 // IComposite is an interface for anything that has a concept of a single
 // "inner" widget. This applies to certain widgets themselves
 // (e.g. ButtonWidget) and also to the App object which holds the top-level
 // view.
-//
 type IComposite interface {
 	SubWidget() IWidget
 }
@@ -461,7 +456,6 @@ type IComposite interface {
 // settable "inner" widget. This applies to certain widgets themselves
 // (e.g. ButtonWidget) and also to the App object which holds the top-level
 // view.
-//
 type ISettableComposite interface {
 	IComposite
 	SetSubWidget(IWidget, IApp)
@@ -480,7 +474,6 @@ type ISubWidgetSize interface {
 // to implement Render(). If you make a new Button by embedding
 // ButtonWidget, you may be able to implement Render() by simply calling
 // RenderButton().
-//
 type ICompositeWidget interface {
 	IWidget
 	IComposite
@@ -490,7 +483,6 @@ type ICompositeWidget interface {
 // ICompositeMultiple is an interface for widget containers that have multiple
 // children and that support specifying how the children are laid out relative
 // to each other.
-//
 type ICompositeMultiple interface {
 	SubWidgets() []IWidget
 }
@@ -503,7 +495,6 @@ type ISettableSubWidgets interface {
 
 // ICompositeMultipleDimensions is an interface for collections of widget dimensions,
 // used in laying out some container widgets.
-//
 type ICompositeMultipleDimensions interface {
 	ICompositeMultiple
 	Dimensions() []IWidgetDimension
@@ -512,14 +503,12 @@ type ICompositeMultipleDimensions interface {
 // ISettableDimensions is implemented by types that maintain a collection of
 // dimensions - to be used by containers that use these dimensions to layout
 // their children widgets.
-//
 type ISettableDimensions interface {
 	SetDimensions([]IWidgetDimension, IApp)
 }
 
 // IFocus is a container widget concept that describes which widget will be
 // the target of keyboard input.
-//
 type IFocus interface {
 	Focus() int
 	SetFocus(app IApp, i int)
@@ -534,7 +523,6 @@ type IFindNextSelectable interface {
 // ICompositeMultipleWidget is a widget that implements ICompositeMultiple. The
 // widget must support computing the render-time size of any of its children
 // and setting focus.
-//
 type ICompositeMultipleWidget interface {
 	IWidget
 	ICompositeMultipleDimensions
@@ -558,7 +546,6 @@ type ICompositeMultipleWidget interface {
 // IClickable is implemented by any type that implements a Click()
 // method, intended to be run in response to a user interaction with the
 // type such as left mouse click or hitting enter.
-//
 type IClickable interface {
 	Click(app IApp)
 }
@@ -566,7 +553,6 @@ type IClickable interface {
 // IDoubleClickable is implemented by any type that implements a DoubleClick()
 // method, intended to be run in response to a user interaction with the
 // type such as two left mouse clicks close together in time.
-//
 type IDoubleClickable interface {
 	DoubleClick(app IApp) bool // Return true if action was taken; to suppress Click()
 	DoubleClickDelay() time.Duration
@@ -575,7 +561,6 @@ type IDoubleClickable interface {
 // IKeyPress is implemented by any type that implements a KeyPress()
 // method, intended to be run in response to a user interaction with the
 // type such as hitting the escape key.
-//
 type IKeyPress interface {
 	KeyPress(key IKey, app IApp)
 }
@@ -595,7 +580,6 @@ type IClickTracker interface {
 // widget such as left mouse click or hitting enter. A widget implementing
 // Click() and ID() may be able to run UserInputCheckedWidget() for its
 // UserInput() implementation.
-//
 type IClickableWidget interface {
 	IWidget
 	IClickable
@@ -614,7 +598,6 @@ type IClickableWidget interface {
 // receive the click event, make sure the newly built widget has the same
 // ID() as the original (e.g. a serialized representation of a position in
 // a ListWalker)
-//
 type IIdentityWidget interface {
 	IWidget
 	IIdentity
@@ -628,7 +611,6 @@ type IIdentityWidget interface {
 // moving the cursor vertically around the screen - instead of having it hop
 // left and right depending on which widget happens to be in focus at the
 // current y coordinate.
-//
 type IPreferedPosition interface {
 	GetPreferedPosition() gwutil.IntOption
 	SetPreferedPosition(col int, app IApp)
@@ -692,7 +674,7 @@ type IClipboardSelected interface {
 // will change).
 type AddressProvidesID struct{}
 
-func (a *AddressProvidesID) ID() interface{} {
+func (a *AddressProvidesID) ID() any {
 	return a
 }
 
@@ -700,10 +682,9 @@ func (a *AddressProvidesID) ID() interface{} {
 
 // RejectUserInput is a convenience struct that can be embedded in widgets
 // that don't accept any user input.
-//
 type RejectUserInput struct{}
 
-func (r RejectUserInput) UserInput(ev interface{}, size IRenderSize, focus Selector, app IApp) bool {
+func (r RejectUserInput) UserInput(ev any, size IRenderSize, focus Selector, app IApp) bool {
 	return false
 }
 
@@ -711,7 +692,6 @@ func (r RejectUserInput) UserInput(ev interface{}, size IRenderSize, focus Selec
 
 // NotSelectable is a convenience struct that can be embedded in widgets. It provides
 // a function that simply return false to the call to Selectable()
-//
 type NotSelectable struct{}
 
 func (r *NotSelectable) Selectable() bool {
@@ -722,7 +702,6 @@ func (r *NotSelectable) Selectable() bool {
 
 // IsSelectable is a convenience struct that can be embedded in widgets. It provides
 // a function that simply return true to the call to Selectable()
-//
 type IsSelectable struct{}
 
 func (r *IsSelectable) Selectable() bool {
@@ -732,7 +711,6 @@ func (r *IsSelectable) Selectable() bool {
 //======================================================================
 
 // SelectableIfAnySubWidgetsAre is useful for various container widgets.
-//
 func SelectableIfAnySubWidgetsAre(w ICompositeMultipleDimensions) bool {
 	for _, widget := range w.SubWidgets() {
 		if widget.Selectable() {
@@ -797,7 +775,7 @@ func CalculateRenderSizeFallback(w IWidget, size IRenderSize, focus Selector, ap
 
 // UserInputIfSelectable will return false if the widget is not selectable; otherwise it will
 // try the widget's UserInput function.
-func UserInputIfSelectable(w IWidget, ev interface{}, size IRenderSize, focus Selector, app IApp) bool {
+func UserInputIfSelectable(w IWidget, ev any, size IRenderSize, focus Selector, app IApp) bool {
 	res := false
 	if w.Selectable() {
 		res = w.UserInput(ev, size, focus, app)
@@ -834,9 +812,9 @@ func RenderRoot(w IWidget, t *App) {
 	maxX, maxY := t.TerminalSize()
 	canvas := w.Render(RenderBox{C: maxX, R: maxY}, Focused, t)
 
-	// tcell will apply its default style to empty cells. But because gowid's model
+	// will apply its default style to empty cells. But because gowid's model
 	// is to layer styles, here we explicitly merge each canvas cell on top of a cell
-	// constructed with the tcell default style. Therefore if the tcell default applies
+	// constructed with the default style. Therefore if the default applies
 	// an underline, for example, then each canvas cell will be merged on top of a cell
 	// with an underline. If the upper cell masks out underline, then it won't show. But
 	// if the upper cell doesn't mask out the underline, it will show.
@@ -919,7 +897,7 @@ func AppendBlankLines(c IAppendBlankLines, iters int) {
 //======================================================================
 
 type ICallbackRunner interface {
-	RunWidgetCallbacks(name interface{}, app IApp, w IWidget)
+	RunWidgetCallbacks(name any, app IApp, w IWidget)
 }
 
 // IWidgetChangedCallback defines the types that can be used as callbacks
@@ -930,20 +908,20 @@ type ICallbackRunner interface {
 // callbacks to be removed correctly, if that is required.
 type IWidgetChangedCallback interface {
 	IIdentity
-	Changed(app IApp, widget IWidget, data ...interface{})
+	Changed(app IApp, widget IWidget, data ...any)
 }
 
 // WidgetChangedFunction meets the IWidgetChangedCallback interface, for simpler
 // usage.
 type WidgetChangedFunction func(app IApp, widget IWidget)
 
-func (f WidgetChangedFunction) Changed(app IApp, widget IWidget, data ...interface{}) {
+func (f WidgetChangedFunction) Changed(app IApp, widget IWidget, data ...any) {
 	f(app, widget)
 }
 
-type WidgetChangedFunctionExt func(app IApp, widget IWidget, data ...interface{})
+type WidgetChangedFunctionExt func(app IApp, widget IWidget, data ...any)
 
-func (f WidgetChangedFunctionExt) Changed(app IApp, widget IWidget, data ...interface{}) {
+func (f WidgetChangedFunctionExt) Changed(app IApp, widget IWidget, data ...any) {
 	f(app, widget, data...)
 }
 
@@ -951,18 +929,18 @@ func (f WidgetChangedFunctionExt) Changed(app IApp, widget IWidget, data ...inte
 // that embeds a WidgetChangedFunction to be issued as a callback when a widget
 // property changes.
 type WidgetCallback struct {
-	Name interface{}
+	Name any
 	WidgetChangedFunction
 }
 
-func MakeWidgetCallback(name interface{}, fn WidgetChangedFunction) WidgetCallback {
+func MakeWidgetCallback(name any, fn WidgetChangedFunction) WidgetCallback {
 	return WidgetCallback{
 		Name:                  name,
 		WidgetChangedFunction: fn,
 	}
 }
 
-func (f WidgetCallback) ID() interface{} {
+func (f WidgetCallback) ID() any {
 	return f.Name
 }
 
@@ -970,24 +948,24 @@ func (f WidgetCallback) ID() interface{} {
 // that embeds a WidgetChangedFunction to be issued as a callback when a widget
 // property changes.
 type WidgetCallbackExt struct {
-	Name interface{}
+	Name any
 	WidgetChangedFunctionExt
 }
 
-func MakeWidgetCallbackExt(name interface{}, fn WidgetChangedFunctionExt) WidgetCallbackExt {
+func MakeWidgetCallbackExt(name any, fn WidgetChangedFunctionExt) WidgetCallbackExt {
 	return WidgetCallbackExt{
 		Name:                     name,
 		WidgetChangedFunctionExt: fn,
 	}
 }
 
-func (f WidgetCallbackExt) ID() interface{} {
+func (f WidgetCallbackExt) ID() any {
 	return f.Name
 }
 
-func RunWidgetCallbacks(c ICallbacks, name interface{}, app IApp, data ...interface{}) {
+func RunWidgetCallbacks(c ICallbacks, name any, app IApp, data ...any) {
 	if c != nil {
-		data2 := append([]interface{}{app}, data...)
+		data2 := append([]any{app}, data...)
 		c.RunCallbacks(name, data2...)
 	}
 }
@@ -996,18 +974,18 @@ type widgetChangedCallbackProxy struct {
 	IWidgetChangedCallback
 }
 
-func (p widgetChangedCallbackProxy) Call(args ...interface{}) {
+func (p widgetChangedCallbackProxy) Call(args ...any) {
 	t := args[0].(IApp)
 	var w IWidget
 	w, _ = args[1].(IWidget)
 	p.IWidgetChangedCallback.Changed(t, w, args[2:]...)
 }
 
-func AddWidgetCallback(c ICallbacks, name interface{}, cb IWidgetChangedCallback) {
+func AddWidgetCallback(c ICallbacks, name any, cb IWidgetChangedCallback) {
 	c.AddCallback(name, widgetChangedCallbackProxy{cb})
 }
 
-func RemoveWidgetCallback(c ICallbacks, name interface{}, id IIdentity) {
+func RemoveWidgetCallback(c ICallbacks, name any, id IIdentity) {
 	c.RemoveCallback(name, id)
 }
 
@@ -1156,7 +1134,7 @@ func (f CellRangeFunc) ProcessCell(cell Cell) Cell {
 // capture the time of the keypress. It can be used by widgets to customize what
 // keypresses they respond to.
 type IKey interface {
-	Rune() rune
+	Str() string
 	Key() tcell.Key
 	Modifiers() tcell.ModMask
 }
@@ -1164,9 +1142,9 @@ type IKey interface {
 func KeysEqual(k1, k2 IKey) bool {
 	res := true
 	res = res && (k1.Key() == k2.Key())
-	if k1.Key() == tcell.KeyRune && k1.Key() == tcell.KeyRune {
+	if tcell.KeyRune == k1.Key() && k1.Key() == tcell.KeyRune {
 		res = res && (k1.Modifiers() == k2.Modifiers())
-		res = res && (k1.Rune() == k2.Rune())
+		res = res && (k1.Str() == k2.Str())
 	}
 	return res
 }
@@ -1177,10 +1155,10 @@ func KeysEqual(k1, k2 IKey) bool {
 type Key struct {
 	mod tcell.ModMask
 	key tcell.Key
-	ch  rune
+	ch  string
 }
 
-func MakeKey(ch rune) Key {
+func MakeKey(ch string) Key {
 	return Key{ch: ch, key: tcell.KeyRune}
 }
 
@@ -1188,7 +1166,7 @@ func MakeKeyExt(key tcell.Key) Key {
 	return Key{key: key}
 }
 
-func MakeKeyExt2(mod tcell.ModMask, key tcell.Key, ch rune) Key {
+func MakeKeyExt2(mod tcell.ModMask, key tcell.Key, ch string) Key {
 	return Key{
 		mod: mod,
 		key: key,
@@ -1196,7 +1174,7 @@ func MakeKeyExt2(mod tcell.ModMask, key tcell.Key, ch rune) Key {
 	}
 }
 
-func (k Key) Rune() rune {
+func (k Key) Str() string {
 	return k.ch
 }
 
@@ -1228,9 +1206,9 @@ func (k Key) String() string {
 	ok := false
 	if s, ok = tcell.KeyNames[k.key]; !ok {
 		if k.key == tcell.KeyRune {
-			s = fmt.Sprintf("%c", k.ch)
+			s = k.ch
 		} else {
-			s = fmt.Sprintf("Key[%d,%d]", k.key, int(k.ch))
+			s = fmt.Sprintf("Key[%d,%s]", k.key, k.ch)
 		}
 	}
 	if len(m) != 0 {
@@ -1574,7 +1552,7 @@ func ComputeSubSize(size IRenderSize, w IWidgetDimension, h IWidgetDimension) (I
 // PrefPosition repeatedly unpacks composite widgets until it has to stop. It
 // looks for a type exports a prefered position API. The widget might be
 // ContainerWidget/StyledWidget/...
-func PrefPosition(curw interface{}) gwutil.IntOption {
+func PrefPosition(curw any) gwutil.IntOption {
 	var res gwutil.IntOption
 	for {
 		if ipos, ok := curw.(IPreferedPosition); ok {
@@ -1590,7 +1568,7 @@ func PrefPosition(curw interface{}) gwutil.IntOption {
 	return res
 }
 
-func SetPrefPosition(curw interface{}, prefPos int, app IApp) bool {
+func SetPrefPosition(curw any, prefPos int, app IApp) bool {
 	var res bool
 	for {
 		if ipos, ok := curw.(IPreferedPosition); ok {
@@ -1710,8 +1688,8 @@ func Focus(w IWidget) int {
 // position at that level in the widget hierarchy. The returned list may
 // be shorter than the focus path through the hierarchy - only widgets
 // that have more than one option for the focus will contribute.
-func FocusPath(w IWidget) []interface{} {
-	res := make([]interface{}, 0)
+func FocusPath(w IWidget) []any {
+	res := make([]any, 0)
 	includeMe := true
 	for {
 		w = FindInHierarchy(w, includeMe, WidgetPredicate(func(w IWidget) bool {
@@ -1743,7 +1721,7 @@ func (f FocusPathResult) Error() string {
 // can be applied, the result's Succeeded field is set to false, and the
 // FailedLevel field provides the index in the array of paths that could not
 // be applied.
-func SetFocusPath(w IWidget, path []interface{}, app IApp) FocusPathResult {
+func SetFocusPath(w IWidget, path []any, app IApp) FocusPathResult {
 	res := FocusPathResult{
 		Succeeded: true,
 	}
@@ -1776,7 +1754,7 @@ type ICopyModeWidget interface {
 
 // CopyModeUserInput processes copy mode events in a typical fashion - a widget that wraps one
 // with potentially copyable information could defer to this implementation of UserInput.
-func CopyModeUserInput(w ICopyModeWidget, ev interface{}, size IRenderSize, focus Selector, app IApp) bool {
+func CopyModeUserInput(w ICopyModeWidget, ev any, size IRenderSize, focus Selector, app IApp) bool {
 	res := false
 
 	lvls := w.CopyModeLevels()

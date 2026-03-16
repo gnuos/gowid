@@ -8,23 +8,23 @@ import (
 	"math"
 	"time"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/bargraph"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/clicktracker"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/fill"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/hpadding"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/progress"
-	"github.com/gcla/gowid/widgets/radio"
-	"github.com/gcla/gowid/widgets/shadow"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/bargraph"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/clicktracker"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/fill"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/hpadding"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/progress"
+	"github.com/gnuos/gowid/widgets/radio"
+	"github.com/gnuos/gowid/widgets/shadow"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -63,7 +63,7 @@ func NewGraphModel() *GraphModel {
 	modes := make([]string, 0)
 	data := make(map[string][]int)
 	var a1 []int
-	for i := 0; i < 50; i++ {
+	for i := range 50 {
 		a1 = append(a1, i*2)
 	}
 	a2 := append(a1, a1...)
@@ -72,7 +72,7 @@ func NewGraphModel() *GraphModel {
 
 	var a3 []int
 	var a4 []int
-	for i := 0; i < 30; i++ {
+	for range 30 {
 		a3 = append(a3, 0)
 		a4 = append(a4, 100)
 	}
@@ -80,21 +80,21 @@ func NewGraphModel() *GraphModel {
 	modes = append(modes, "Square")
 
 	var a5 []int
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		a5 = append(a5, sin100(i))
 	}
 	data["Sine 1"] = a5
 	modes = append(modes, "Sine 1")
 
 	var a6 []int
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		a6 = append(a6, (sin100(i)+sin100(i*2))/2)
 	}
 	data["Sine 2"] = a6
 	modes = append(modes, "Sine 2")
 
 	var a7 []int
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		a7 = append(a7, (sin100(i)+sin100(i*3))/2)
 	}
 	data["Sine 3"] = a7
@@ -146,8 +146,8 @@ func NewGraphView(controller *GraphController) *GraphView {
 	graph := MakeBarGraph()
 	controls := MakeBarGraphControls(controller, pb)
 
-	weight1 := gowid.RenderWithWeight{1}
-	weight2 := gowid.RenderWithWeight{2}
+	weight1 := gowid.RenderWithWeight{W: 1}
+	weight2 := gowid.RenderWithWeight{W: 2}
 	unit1 := gowid.RenderWithUnits{U: 1}
 
 	vline := styled.New(fill.New('│'), gowid.MakePaletteRef("line"))
@@ -158,9 +158,9 @@ func NewGraphView(controller *GraphController) *GraphView {
 				styled.New(
 					framed.NewUnicode(
 						columns.New([]gowid.IContainerWidget{
-							&gowid.ContainerWidget{graph, weight2},
-							&gowid.ContainerWidget{vline, unit1},
-							&gowid.ContainerWidget{controls, weight1},
+							&gowid.ContainerWidget{IWidget: graph, D: weight2},
+							&gowid.ContainerWidget{IWidget: vline, D: unit1},
+							&gowid.ContainerWidget{IWidget: controls, D: weight1},
 						}),
 					),
 					gowid.MakePaletteRef("body"),
@@ -185,7 +185,7 @@ func (g *GraphView) Selectable() bool {
 	return true
 }
 
-func (g *GraphView) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (g *GraphView) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return g.Widget.UserInput(ev, size, focus, app)
 }
 
@@ -214,18 +214,19 @@ func MakeBarGraphControls(controller *GraphController, pb progress.IWidget) *pil
 			firstrb = rb1
 		}
 		rbt1 := text.New(" " + mode)
-		rb1.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-			controller.model.SetMode(capturedMode)
-			controller.view.UpdateGraph(true, app)
-			controller.view.lastOffset = nil
-		}})
+		rb1.OnClick(gowid.WidgetCallback{Name: "cb",
+			WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+				controller.model.SetMode(capturedMode)
+				controller.view.UpdateGraph(true, app)
+				controller.view.lastOffset = nil
+			}})
 		modeButton := make([]gowid.IContainerWidget, 0)
-		modeButton = append(modeButton, &gowid.ContainerWidget{rb1, p})
-		modeButton = append(modeButton, &gowid.ContainerWidget{rbt1, p})
+		modeButton = append(modeButton, &gowid.ContainerWidget{IWidget: rb1, D: p})
+		modeButton = append(modeButton, &gowid.ContainerWidget{IWidget: rbt1, D: p})
 		modeButtonCols := styled.NewExt(columns.New(modeButton),
 			gowid.MakePaletteRef("button normal"),
 			gowid.MakePaletteRef("button select"))
-		modeButtons = append(modeButtons, &gowid.ContainerWidget{modeButtonCols, f})
+		modeButtons = append(modeButtons, &gowid.ContainerWidget{IWidget: modeButtonCols, D: f})
 	}
 
 	animateText := text.New("Start")
@@ -235,23 +236,26 @@ func MakeBarGraphControls(controller *GraphController, pb progress.IWidget) *pil
 	quitText := text.New("Quit")
 	quitButton := button.New(quitText)
 
-	animateButton.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		if animateText.Content().Length() == 5 {
-			controller.AnimateGraph(app)
-			animateText.SetText("Stop", app)
-		} else {
-			controller.StopAnimation()
-			animateText.SetText("Start", app)
-		}
-	}})
+	animateButton.OnClick(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			if animateText.Content().Length() == 5 {
+				controller.AnimateGraph(app)
+				animateText.SetText("Stop", app)
+			} else {
+				controller.StopAnimation()
+				animateText.SetText("Start", app)
+			}
+		}})
 
-	resetButton.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		controller.ResetGraph(app)
-	}})
+	resetButton.OnClick(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			controller.ResetGraph(app)
+		}})
 
-	quitButton.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		app.Quit()
-	}})
+	quitButton.OnClick(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			app.Quit()
+		}})
 
 	animateButtonStyled := styled.NewExt(animateButton,
 		gowid.MakePaletteRef("button normal"),
@@ -268,19 +272,19 @@ func MakeBarGraphControls(controller *GraphController, pb progress.IWidget) *pil
 	quitButtonTracker := clicktracker.New(quitButtonStyled)
 
 	buttonGrid := columns.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{hpadding.New(animateButtonTracker, gowid.HAlignMiddle{}, p), gowid.RenderWithWeight{1}},
-		&gowid.ContainerWidget{hpadding.New(resetButtonTracker, gowid.HAlignMiddle{}, p), gowid.RenderWithWeight{1}},
+		&gowid.ContainerWidget{IWidget: hpadding.New(animateButtonTracker, gowid.HAlignMiddle{}, p), D: gowid.RenderWithWeight{W: 1}},
+		&gowid.ContainerWidget{IWidget: hpadding.New(resetButtonTracker, gowid.HAlignMiddle{}, p), D: gowid.RenderWithWeight{W: 1}},
 	})
 
 	controls := make([]gowid.IContainerWidget, 0, 7+len(modeButtons))
 	controls = append(controls, modeButtons...)
-	controls = append(controls, &gowid.ContainerWidget{divider.NewBlank(), f})
-	controls = append(controls, &gowid.ContainerWidget{hpadding.New(text.New("Animation"), gowid.HAlignMiddle{}, p), f})
-	controls = append(controls, &gowid.ContainerWidget{buttonGrid, f})
-	controls = append(controls, &gowid.ContainerWidget{divider.NewBlank(), f})
-	controls = append(controls, &gowid.ContainerWidget{pb, f})
-	controls = append(controls, &gowid.ContainerWidget{divider.NewBlank(), f})
-	controls = append(controls, &gowid.ContainerWidget{hpadding.New(quitButtonTracker, gowid.HAlignMiddle{}, p), f})
+	controls = append(controls, &gowid.ContainerWidget{IWidget: divider.NewBlank(), D: f})
+	controls = append(controls, &gowid.ContainerWidget{IWidget: hpadding.New(text.New("Animation"), gowid.HAlignMiddle{}, p), D: f})
+	controls = append(controls, &gowid.ContainerWidget{IWidget: buttonGrid, D: f})
+	controls = append(controls, &gowid.ContainerWidget{IWidget: divider.NewBlank(), D: f})
+	controls = append(controls, &gowid.ContainerWidget{IWidget: pb, D: f})
+	controls = append(controls, &gowid.ContainerWidget{IWidget: divider.NewBlank(), D: f})
+	controls = append(controls, &gowid.ContainerWidget{IWidget: hpadding.New(quitButtonTracker, gowid.HAlignMiddle{}, p), D: f})
 
 	controlsPile := pile.New(controls)
 
@@ -294,7 +298,7 @@ func (v *GraphView) GetOffsetNow() int {
 	if !v.started {
 		return v.offset
 	}
-	tdelta := time.Now().Sub(*v.startTime)
+	tdelta := time.Since(*v.startTime)
 	tdelta = tdelta * 5
 	x := v.offset + (int(round(tdelta.Seconds())))
 	return x
@@ -310,7 +314,7 @@ func (v *GraphView) UpdateGraph(forceUpdate bool, app gowid.IApp) bool {
 	r := gspb * 5
 	d, maxValue, repeat := v.controller.GetData(o, r)
 	l := make([][]int, 0)
-	for n := 0; n < 5; n++ {
+	for n := range 5 {
 		value := sum(d[n*gspb:(n+1)*gspb]...) / gspb
 		// toggle between two bar types
 		if n&1 == 1 {
@@ -372,7 +376,7 @@ func (g *GraphController) AnimateGraph(app gowid.IApp) {
 	g.ticker = time.NewTicker(time.Millisecond * 200)
 	g.view.started = true
 	go func() {
-		for _ = range g.ticker.C {
+		for range g.ticker.C {
 			app.Run(gowid.RunFunction(func(app gowid.IApp) {
 				g.view.UpdateGraph(true, app)
 				app.Redraw()

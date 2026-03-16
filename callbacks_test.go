@@ -16,7 +16,7 @@ func Test1(t *testing.T) {
 	cb.RunCallbacks("test1", 1)
 	assert.Equal(t, 1, x)
 
-	cb.AddCallback("test2", Callback{"addit", CallbackFunction(func(args ...interface{}) {
+	cb.AddCallback("test2", Callback{"addit", CallbackFunction(func(args ...any) {
 		y := args[0].(int)
 		x = x + y
 	})})
@@ -27,7 +27,7 @@ func Test1(t *testing.T) {
 	cb.RunCallbacks("test2", 2)
 	assert.Equal(t, 4, x)
 
-	cb.AddCallback("test2", Callback{"addit100", CallbackFunction(func(args ...interface{}) {
+	cb.AddCallback("test2", Callback{"addit100", CallbackFunction(func(args ...any) {
 		y := args[0].(int)
 		x = x + (y * 100)
 	})})

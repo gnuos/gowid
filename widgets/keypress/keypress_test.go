@@ -6,9 +6,9 @@ package keypress
 import (
 	"testing"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
-	"github.com/gcla/gowid/widgets/text"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
+	"github.com/gnuos/gowid/widgets/text"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,18 +18,18 @@ type KeyPressTester struct {
 	Gotit bool
 }
 
-func (f *KeyPressTester) Changed(gowid.IApp, gowid.IWidget, ...interface{}) {
+func (f *KeyPressTester) Changed(gowid.IApp, gowid.IWidget, ...any) {
 	f.Gotit = true
 }
 
-func (f *KeyPressTester) ID() interface{} { return "foo" }
+func (f *KeyPressTester) ID() any { return "foo" }
 
 //======================================================================
 
 func TestKey1(t *testing.T) {
 	tw := text.New("hitq")
 	w := New(tw, Options{
-		Keys: []gowid.IKey{gowid.MakeKey('q')},
+		Keys: []gowid.IKey{gowid.MakeKey("q")},
 	})
 
 	ct := &KeyPressTester{Gotit: false}
@@ -40,7 +40,7 @@ func TestKey1(t *testing.T) {
 	c1 := w.Render(gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	assert.Equal(t, c1.String(), "hitq")
 
-	UserInput(w, gwtest.KeyEvent('q'), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
+	UserInput(w, gwtest.KeyEvent("q"), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	// w.Click(gwtest.D)
 	assert.Equal(t, ct.Gotit, true)
 	ct.Gotit = false
@@ -48,21 +48,21 @@ func TestKey1(t *testing.T) {
 	// most widgets will funnel user input to the "focus" widget - so this should
 	// never be necessary. But if you built something that passed input to both
 	// widgets when only one had focus, you'd presumably want this to fire
-	UserInput(w, gwtest.KeyEvent('q'), gowid.RenderFixed{}, gowid.NotSelected, gwtest.D)
+	UserInput(w, gwtest.KeyEvent("q"), gowid.RenderFixed{}, gowid.NotSelected, gwtest.D)
 	assert.Equal(t, ct.Gotit, true)
 	ct.Gotit = false
 
-	UserInput(w, gwtest.KeyEvent('r'), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
+	UserInput(w, gwtest.KeyEvent("r"), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	assert.Equal(t, ct.Gotit, false)
 	ct.Gotit = false
 
 	cbCalled := false
 	w.OnKeyPress(WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget, k gowid.IKey) {
-		assert.Equal(t, true, gowid.KeysEqual(k, gowid.MakeKey('q')))
+		assert.Equal(t, true, gowid.KeysEqual(k, gowid.MakeKey("q")))
 		cbCalled = true
 	}})
 
-	UserInput(w, gwtest.KeyEvent('q'), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
+	UserInput(w, gwtest.KeyEvent("q"), gowid.RenderFixed{}, gowid.Focused, gwtest.D)
 	assert.Equal(t, ct.Gotit, true)
 	assert.Equal(t, true, cbCalled)
 	ct.Gotit = false

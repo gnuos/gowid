@@ -9,11 +9,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/vim"
-	"github.com/gcla/gowid/widgets/fill"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/vim"
+	"github.com/gnuos/gowid/widgets/fill"
 )
 
 //======================================================================
@@ -93,18 +93,18 @@ func New(widgets []gowid.IContainerWidget, opts ...Options) *Widget {
 	return res
 }
 
-//func Simple(ws ...gowid.IWidget) *Widget {
-func NewFlow(ws ...interface{}) *Widget {
+// func Simple(ws ...gowid.IWidget) *Widget {
+func NewFlow(ws ...any) *Widget {
 	return NewWithDim(gowid.RenderFlow{}, ws...)
 }
 
-func NewFixed(ws ...interface{}) *Widget {
+func NewFixed(ws ...any) *Widget {
 	return NewWithDim(gowid.RenderFixed{}, ws...)
 }
 
-func NewWithDim(method gowid.IWidgetDimension, ws ...interface{}) *Widget {
+func NewWithDim(method gowid.IWidgetDimension, ws ...any) *Widget {
 	cws := make([]gowid.IContainerWidget, len(ws))
-	for i := 0; i < len(ws); i++ {
+	for i := range len(ws) {
 		if cw, ok := ws[i].(gowid.IContainerWidget); ok {
 			cws[i] = cw
 		} else {
@@ -123,7 +123,7 @@ func (w *Widget) SelectChild(f gowid.Selector) bool {
 
 func (w *Widget) String() string {
 	cols := make([]string, len(w.widgets))
-	for i := 0; i < len(cols); i++ {
+	for i := range len(cols) {
 		cols[i] = fmt.Sprintf("%v", w.widgets[i])
 	}
 	return fmt.Sprintf("columns[%s]", strings.Join(cols, ","))
@@ -194,14 +194,13 @@ func (w *Widget) FindNextSelectable(dir gowid.Direction, wrap bool) (int, bool) 
 	return gowid.FindNextSelectableFrom(w, w.Focus(), dir, wrap)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
 // RenderSize computes the size of this widget when it renders. This is
 // done by computing the sizes of each subwidget, then arranging them the
 // same way that Render() does.
-//
 func (w *Widget) RenderSize(size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.IRenderBox {
 	return RenderSize(w, size, focus, app)
 }
@@ -220,7 +219,6 @@ func (w *Widget) RenderedSubWidgetsSizes(size gowid.IRenderSize, focus gowid.Sel
 
 // Return a slice of ints representing the width in columns for each of the subwidgets to be rendered
 // in this context given the size argument.
-//
 func (w *Widget) WidgetWidths(size gowid.IRenderSize, focus gowid.Selector, focusIdx int, app gowid.IApp) []int {
 	return WidgetWidths(w, size, focus, focusIdx, app)
 }
@@ -229,7 +227,6 @@ func (w *Widget) WidgetWidths(size gowid.IRenderSize, focus gowid.Selector, focu
 // preserve the type of context e.g. a subwidget may only support being rendered in a
 // fixed context. The newX parameter is the width the subwidget will have within the
 // context of the Columns widget.
-//
 func (w *Widget) SubWidgetSize(size gowid.IRenderSize, newX int, sub gowid.IWidget, dim gowid.IWidgetDimension) gowid.IRenderSize {
 	return SubWidgetSize(size, newX, dim)
 }
@@ -326,7 +323,7 @@ func SubWidgetSize(size gowid.IRenderSize, newX int, dim gowid.IWidgetDimension)
 	return subSize
 }
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := false
 	subfocus := w.Focus()
 
@@ -472,7 +469,7 @@ func widgetWidthsExt(w gowid.ISelectChild, subs []gowid.IWidget, dims []gowid.IW
 	}
 
 	// First, render the widgets whose width is known
-	for i := 0; i < lenw; i++ {
+	for i := range lenw {
 		// This doesn't support IRenderFlow. That type comes with an associated width e.g.
 		// "Flow with 25 columns". We don't have any way to apportion those columns amongst
 		// the overall width for the widget.
@@ -538,13 +535,13 @@ func widgetWidthsExt(w gowid.ISelectChild, subs []gowid.IWidget, dims []gowid.IW
 		}
 		doneone := false
 		totalWeight = 0
-		for i := 0; i < lenw; i++ {
+		for i := range lenw {
 			if w2, ok := dims[i].(gowid.IRenderWithWeight); ok && !widthHelper[i] {
 				totalWeight += w2.Weight()
 			}
 		}
 		colsToDivideUp = colsLeft
-		for i := 0; i < lenw; i++ {
+		for i := range lenw {
 			// Can only be weight here if !helper[i] ; but not sufficient for it to be eligible
 			if !widthHelper[i] {
 				cols := int(((float32(dims[i].(gowid.IRenderWithWeight).Weight()) / float32(totalWeight)) * float32(colsToDivideUp)) + 0.5)
@@ -611,7 +608,7 @@ func RenderSize(w gowid.ICompositeMultipleWidget, size gowid.IRenderSize, focus 
 		}
 	}
 
-	return gowid.RenderBox{maxcol, maxrow}
+	return gowid.RenderBox{C: maxcol, R: maxrow}
 }
 
 func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) gowid.ICanvas {
@@ -622,15 +619,15 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 	subs := w.SubWidgets()
 
 	// Assemble subcanvases into final canvas
-	for i := 0; i < len(subs); i++ {
+	for i := range len(subs) {
 		diff := res.BoxRows() - canvases[i].BoxRows()
 		if diff > 0 {
 			fill := fill.NewEmpty()
-			fc := fill.Render(gowid.RenderBox{canvases[i].BoxColumns(), diff}, gowid.NotSelected, app)
+			fc := fill.Render(gowid.RenderBox{C: canvases[i].BoxColumns(), R: diff}, gowid.NotSelected, app)
 			canvases[i].AppendBelow(fc, false, false)
 		} else if diff < 0 {
 			fill := fill.NewEmpty()
-			fc := fill.Render(gowid.RenderBox{res.BoxColumns(), -diff}, gowid.NotSelected, app)
+			fc := fill.Render(gowid.RenderBox{C: res.BoxColumns(), R: -diff}, gowid.NotSelected, app)
 			res.AppendBelow(fc, false, false)
 		}
 		res.AppendRight(canvases[i], i == subfocus)
@@ -648,7 +645,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 	return res
 }
 
-var AllChildrenMaxDimension = fmt.Errorf("All columns widgets were rendered Max, so there is no max height to use.")
+var ErrAllChildrenMaxDimension = fmt.Errorf("all columns widgets were rendered Max, so there is no max height to use")
 
 // RenderSubWidgets returns an array of canvases for each of the subwidgets, rendering them
 // with in the context of a column with the provided size and focus.
@@ -682,7 +679,7 @@ func RenderSubWidgets(w IWidget, size gowid.IRenderSize, focus gowid.Selector, f
 	}
 
 	if curMax == -1 {
-		panic(AllChildrenMaxDimension)
+		panic(ErrAllChildrenMaxDimension)
 	}
 
 	for j := 0; j < len(maxes); j++ {
@@ -715,7 +712,7 @@ func RenderedSubWidgetsSizes(w IWidget, size gowid.IRenderSize, focus gowid.Sele
 	ssizes := make([]int, 0, l)
 	curMax := -1
 
-	for i := 0; i < l; i++ {
+	for i := range l {
 		subSize := w.SubWidgetSize(size, weights[i], subs[i], dims[i])
 
 		if _, ok := dims[i].(gowid.IRenderMax); ok {
@@ -723,7 +720,7 @@ func RenderedSubWidgetsSizes(w IWidget, size gowid.IRenderSize, focus gowid.Sele
 			ssizes = append(ssizes, weights[i])
 		} else {
 			c := subs[i].RenderSize(subSize, focus.SelectIf(w.SelectChild(focus) && i == focusIdx), app)
-			res[i] = gowid.RenderBox{weights[i], c.BoxRows()}
+			res[i] = gowid.RenderBox{C: weights[i], R: c.BoxRows()}
 
 			if res[i].BoxRows() > curMax {
 				curMax = res[i].BoxRows()
@@ -732,11 +729,11 @@ func RenderedSubWidgetsSizes(w IWidget, size gowid.IRenderSize, focus gowid.Sele
 	}
 
 	if curMax == -1 {
-		panic(AllChildrenMaxDimension)
+		panic(ErrAllChildrenMaxDimension)
 	}
 
 	for j := 0; j < len(maxes); j++ {
-		res[maxes[j]] = gowid.RenderBox{ssizes[j], curMax}
+		res[maxes[j]] = gowid.RenderBox{C: ssizes[j], R: curMax}
 	}
 
 	return res

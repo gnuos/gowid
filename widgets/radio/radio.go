@@ -8,10 +8,10 @@ package radio
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/checkbox"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/checkbox"
 )
 
 //======================================================================
@@ -117,7 +117,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return res
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return button.UserInput(w, ev, size, focus, app)
 }
 
@@ -145,12 +145,12 @@ type RadioButtonTester struct {
 	State bool
 }
 
-func (f *RadioButtonTester) Changed(app gowid.IApp, w gowid.IWidget, data ...interface{}) {
+func (f *RadioButtonTester) Changed(app gowid.IApp, w gowid.IWidget, data ...any) {
 	rb := w.(*Widget)
 	f.State = rb.Selected
 }
 
-func (f *RadioButtonTester) ID() interface{} { return "bar" }
+func (f *RadioButtonTester) ID() any { return "bar" }
 
 //======================================================================
 // Local Variables:

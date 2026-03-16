@@ -9,10 +9,10 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/fill"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/fill"
 )
 
 //======================================================================
@@ -169,7 +169,7 @@ func (w *Widget) Render(size gowid.IRenderSize, focus gowid.Selector, app gowid.
 	return Render(w, size, focus, app)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -226,7 +226,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 			subWidgetCanvas.ExtendRight(gowid.EmptyLine(r))
 			subWidgetCanvas.ExtendLeft(gowid.EmptyLine(l))
 		default:
-			panic(fmt.Errorf("Invalid horizontal alignment setting %v of type %T", al, al))
+			panic(fmt.Errorf("invalid horizontal alignment setting %v of type %T", al, al))
 		}
 	}
 
@@ -243,7 +243,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 		case gowid.IRenderFlow, gowid.IRenderFixed, gowid.IRenderWithUnits:
 			rowsToUseInResult = subWidgetRows
 		default:
-			panic(fmt.Errorf("Height spec %v cannot be used in flow mode for %T", w.Height(), w))
+			panic(fmt.Errorf("height spec %v cannot be used in flow mode for %T", w.Height(), w))
 		}
 	case gowid.IRenderFixed:
 		switch w.Height().(type) {
@@ -256,11 +256,11 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 		case gowid.IRenderWithUnits:
 			rowsToUseInResult = w.Height().(gowid.IRenderWithUnits).Units()
 		default:
-			panic(fmt.Errorf("This spec %v of type %T cannot be used in flow mode for %T",
+			panic(fmt.Errorf("this spec %v of type %T cannot be used in flow mode for %T",
 				w.Height(), w.Height(), w))
 		}
 	default:
-		panic(fmt.Errorf("Unknown size %v", size))
+		panic(fmt.Errorf("unknown size %v", size))
 	}
 
 	switch al := w.VAlign().(type) {
@@ -324,7 +324,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 		}
 
 	default:
-		panic(errors.New("Invalid vertical alignment setting"))
+		panic(errors.New("invalid vertical alignment setting"))
 	}
 
 	gowid.MakeCanvasRightSize(subWidgetCanvas, size)
@@ -335,7 +335,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 // UserInput will adjust the input event's x coordinate depending on the input size
 // and widget alignment. If the input is e.g. IRenderFixed, then no adjustment is
 // made.
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	//return false
 	rSize := gowid.RenderSize(w, size, focus, app)
 

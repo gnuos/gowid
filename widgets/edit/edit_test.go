@@ -10,9 +10,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwtest"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwtest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,8 +30,8 @@ func TestType1(t *testing.T) {
 	c1 := w.Render(sz, gowid.Focused, gwtest.D)
 	assert.Equal(t, "hi: 现在 abc   ", c1.String())
 
-	evq := tcell.NewEventKey(tcell.KeyRune, 'q', tcell.ModNone)
-	evdel := tcell.NewEventKey(tcell.KeyDelete, 'X', tcell.ModNone)
+	evq := tcell.NewEventKey(tcell.KeyRune, "q", tcell.ModNone)
+	evdel := tcell.NewEventKey(tcell.KeyDelete, "X", tcell.ModNone)
 
 	w.SetCursorPos(0, gwtest.D)
 	w.UserInput(evq, sz, gowid.Focused, gwtest.D)
@@ -76,7 +76,7 @@ func TestType2(t *testing.T) {
 	c1 := w.Render(sz, gowid.Focused, gwtest.D)
 	assert.Equal(t, "hi:  abc       ", c1.String())
 
-	evq := tcell.NewEventKey(tcell.KeyRune, 'q', tcell.ModNone)
+	evq := tcell.NewEventKey(tcell.KeyRune, "q", tcell.ModNone)
 
 	w.SetCursorPos(0, gwtest.D)
 	w.UserInput(evq, sz, gowid.Focused, gwtest.D)
@@ -110,9 +110,9 @@ func TestLong1(t *testing.T) {
 
 	clickat := func(x, y int) {
 		w.UserInput(evclick(x, y), sz, gowid.Focused, gwtest.D)
-		gwtest.D.SetLastMouseState(gowid.MouseState{true, false, false, time.Now()})
+		gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: true, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 		w.UserInput(evunclick(x, y), sz, gowid.Focused, gwtest.D)
-		gwtest.D.SetLastMouseState(gowid.MouseState{false, false, false, time.Now()})
+		gwtest.D.SetLastMouseState(gowid.MouseState{MouseLeftClicked: false, MouseMiddleClicked: false, MouseRightClicked: false, MouseLastClickedTime: time.Now()})
 	}
 
 	clickat(4, 0)
@@ -143,17 +143,20 @@ func TestEdit1(t *testing.T) {
 	assert.Equal(t, c1.String(), "hi: hello world     ")
 
 	tset := false
-	w.OnTextSet(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		tset = true
-	}})
+	w.OnTextSet(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			tset = true
+		}})
 	cset := false
-	w.OnCaptionSet(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		cset = true
-	}})
+	w.OnCaptionSet(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			cset = true
+		}})
 	pset := false
-	w.OnCursorPosSet(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		pset = true
-	}})
+	w.OnCursorPosSet(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			pset = true
+		}})
 
 	_, err := io.Copy(&Writer{w, gwtest.D}, strings.NewReader("goodbye everyone"))
 	assert.NoError(t, err)
@@ -184,7 +187,7 @@ func TestEdit1(t *testing.T) {
 	assert.Equal(t, w.CursorPos(), x)
 
 	// Make sure no crashes!
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		w.UserInput(gwtest.CursorDown(), gowid.RenderBox{C: 20, R: 5}, gowid.Focused, gwtest.D)
 	}
 

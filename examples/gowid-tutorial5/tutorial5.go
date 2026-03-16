@@ -7,14 +7,14 @@ package main
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/edit"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/edit"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 )
 
 //======================================================================
@@ -27,17 +27,19 @@ func main() {
 	sbtn := styled.New(btn, gowid.MakeStyledAs(gowid.StyleReverse))
 	div := divider.NewBlank()
 
-	btn.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		app.Quit()
-	}})
+	btn.OnClick(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			app.Quit()
+		}})
 
-	ask.OnTextSet(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		if ask.Text() == "" {
-			reply.SetText("", app)
-		} else {
-			reply.SetText(fmt.Sprintf("Nice to meet you, %s", ask.Text()), app)
-		}
-	}})
+	ask.OnTextSet(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			if ask.Text() == "" {
+				reply.SetText("", app)
+			} else {
+				reply.SetText(fmt.Sprintf("Nice to meet you, %s", ask.Text()), app)
+			}
+		}})
 
 	f := gowid.RenderFlow{}
 

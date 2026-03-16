@@ -10,17 +10,17 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/holder"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/radio"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3/color"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/holder"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/radio"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -94,7 +94,7 @@ var attrRE = regexp.MustCompile(`(?P<whitespace>[ \n]*)(?P<entry>((#...)|([a-z_]
 var attrREIndices = makeRegexpNameMap(attrRE)
 
 var fgColorDefault = gowid.NewUrwidColor("light gray")
-var bgColorDefault = gowid.MakeTCellColorExt(tcell.ColorBlack)
+var bgColorDefault = gowid.MakeTCellColorExt(color.Black)
 
 var chartHolder *holder.Widget
 
@@ -136,7 +136,7 @@ func updateChartHolder(mode gowid.ColorMode, app gowid.IApp) {
 		chartMonoContent = text.NewFromContent(parseChart(chartMono))
 		chartHolder.SetSubWidget(chartMonoContent, app)
 	default:
-		panic(errors.New("Invalid mode, something went wrong!"))
+		panic(errors.New("invalid mode, something went wrong"))
 	}
 }
 
@@ -147,33 +147,35 @@ func modeRb(group *[]radio.IWidget, txt string) gowid.IWidget {
 	rb := radio.New(group)
 	widp := gowid.RenderFixed{}
 
-	rb.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		if rb.Selected {
-			switch txt {
-			case "256-Color":
-				app.SetColorMode(gowid.Mode256Colors)
-			case "88-Color":
-				app.SetColorMode(gowid.Mode88Colors)
-			case "16-Color":
-				app.SetColorMode(gowid.Mode16Colors)
-			case "8-Color":
-				app.SetColorMode(gowid.Mode8Colors)
-			case "Monochrome":
-				app.SetColorMode(gowid.ModeMonochrome)
-			case "Foreground Colors":
-				foregroundColors = true
-			case "Background Colors":
-				foregroundColors = false
-			default:
-				panic(errors.New("Invalid mode, something went wrong!"))
+	rb.OnClick(gowid.WidgetCallback{
+		Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			if rb.Selected {
+				switch txt {
+				case "256-Color":
+					app.SetColorMode(gowid.Mode256Colors)
+				case "88-Color":
+					app.SetColorMode(gowid.Mode88Colors)
+				case "16-Color":
+					app.SetColorMode(gowid.Mode16Colors)
+				case "8-Color":
+					app.SetColorMode(gowid.Mode8Colors)
+				case "Monochrome":
+					app.SetColorMode(gowid.ModeMonochrome)
+				case "Foreground Colors":
+					foregroundColors = true
+				case "Background Colors":
+					foregroundColors = false
+				default:
+					panic(errors.New("invalid mode, something went wrong"))
+				}
+				updateChartHolder(app.GetColorMode(), app) // Update the chart displayed
 			}
-			updateChartHolder(app.GetColorMode(), app) // Update the chart displayed
-		}
-	}})
+		}})
 
 	c := columns.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{rb, widp},
-		&gowid.ContainerWidget{rbt, widp},
+		&gowid.ContainerWidget{IWidget: rb, D: widp},
+		&gowid.ContainerWidget{IWidget: rbt, D: widp},
 	})
 
 	cm := styled.NewExt(c, gowid.MakePaletteRef("panel"), gowid.MakePaletteRef("focus"))
@@ -225,7 +227,7 @@ func main() {
 	defer f.Close()
 
 	palette := gowid.Palette{
-		"header":  gowid.MakeStyledPaletteEntry(gowid.ColorBlack, gowid.ColorWhite, gowid.StyleUnderline),
+		"header":  gowid.MakeStyledPaletteEntry(gowid.ColorBlack, gowid.ColorWhite, gowid.StyleNone),
 		"panel":   gowid.MakePaletteEntry(gowid.ColorWhite, gowid.ColorDarkBlue),
 		"focus":   gowid.MakePaletteEntry(gowid.ColorYellow, gowid.ColorRed),
 		"red":     gowid.MakePaletteEntry(gowid.ColorRed, gowid.ColorBlack),
@@ -247,9 +249,11 @@ func main() {
 
 	btn := button.New(text.New("Exit"))
 
-	btn.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		app.Quit()
-	}})
+	btn.OnClick(gowid.WidgetCallback{
+		Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			app.Quit()
+		}})
 
 	subFlow := gowid.RenderFlow{}
 
@@ -257,30 +261,30 @@ func main() {
 	cols256 := modeRb(&rbgroup, "256-Color")
 
 	pw1 := pile.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{modeRb(&rbgroup, "Monochrome"), subFlow},
-		&gowid.ContainerWidget{modeRb(&rbgroup, "8-Color"), subFlow},
-		&gowid.ContainerWidget{modeRb(&rbgroup, "16-Color"), subFlow},
-		&gowid.ContainerWidget{modeRb(&rbgroup, "88-Color"), subFlow},
-		&gowid.ContainerWidget{cols256, subFlow},
+		&gowid.ContainerWidget{IWidget: modeRb(&rbgroup, "Monochrome"), D: subFlow},
+		&gowid.ContainerWidget{IWidget: modeRb(&rbgroup, "8-Color"), D: subFlow},
+		&gowid.ContainerWidget{IWidget: modeRb(&rbgroup, "16-Color"), D: subFlow},
+		&gowid.ContainerWidget{IWidget: modeRb(&rbgroup, "88-Color"), D: subFlow},
+		&gowid.ContainerWidget{IWidget: cols256, D: subFlow},
 	})
 
 	pw2 := pile.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{modeRb(&bggroup, "Foreground Colors"), subFlow},
-		&gowid.ContainerWidget{modeRb(&bggroup, "Background Colors"), subFlow},
-		&gowid.ContainerWidget{divider.NewBlank(), subFlow},
-		&gowid.ContainerWidget{divider.NewBlank(), subFlow},
+		&gowid.ContainerWidget{IWidget: modeRb(&bggroup, "Foreground Colors"), D: subFlow},
+		&gowid.ContainerWidget{IWidget: modeRb(&bggroup, "Background Colors"), D: subFlow},
+		&gowid.ContainerWidget{IWidget: divider.NewBlank(), D: subFlow},
+		&gowid.ContainerWidget{IWidget: divider.NewBlank(), D: subFlow},
 		&gowid.ContainerWidget{
-			styled.NewExt(
+			IWidget: styled.NewExt(
 				btn,
 				gowid.MakePaletteRef("panel"),
 				gowid.MakePaletteRef("focus"),
 			),
-			subFlow},
+			D: subFlow},
 	})
 
 	cs := columns.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{pw1, gowid.RenderWithWeight{10}},
-		&gowid.ContainerWidget{pw2, gowid.RenderWithWeight{10}},
+		&gowid.ContainerWidget{IWidget: pw1, D: gowid.RenderWithWeight{W: 10}},
+		&gowid.ContainerWidget{IWidget: pw2, D: gowid.RenderWithWeight{W: 10}},
 	})
 
 	cs2 := styled.New(cs, gowid.MakePaletteRef("panel"))
@@ -289,9 +293,9 @@ func main() {
 	chartHolder = holder.New(chart256Content)
 
 	view := pile.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{headerText, subFlow},
-		&gowid.ContainerWidget{cs2, subFlow},
-		&gowid.ContainerWidget{chartHolder, gowid.RenderWithWeight{1}},
+		&gowid.ContainerWidget{IWidget: headerText, D: subFlow},
+		&gowid.ContainerWidget{IWidget: cs2, D: subFlow},
+		&gowid.ContainerWidget{IWidget: chartHolder, D: gowid.RenderWithWeight{W: 1}},
 	})
 
 	app, err := gowid.NewApp(gowid.AppArgs{

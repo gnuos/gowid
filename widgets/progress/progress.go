@@ -8,18 +8,17 @@ package progress
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/hpadding"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/hpadding"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 )
 
 //======================================================================
 
 // IWidget - if your widget implements progress.IWidget, you will be able to render it using the
 // progress.Render() function.
-//
 type IWidget interface {
 	gowid.IWidget
 	// Text should return the string to be displayed inside the progress bar e.g. "50%"
@@ -70,7 +69,7 @@ func New(args Options) *Widget {
 }
 
 func (w *Widget) String() string {
-	return fmt.Sprintf("progress")
+	return "progress"
 }
 
 func (w *Widget) Text() string {

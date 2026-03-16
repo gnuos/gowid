@@ -58,7 +58,7 @@ instead. This has the same effect, but means that `gowid.UserInput()` can be use
 the application. For example, you can modify the function in `support.go`:
 
 ```go
-func UserInput(w IWidget, ev interface{}, size IRenderSize, focus Selector, app IApp) bool {
+func UserInput(w IWidget, ev any, size IRenderSize, focus Selector, app IApp) bool {
   if evm, ok := ev.(*tcell.EventMouse); ok {
     // Do something
     fmt.Printf("Sending event %v of type %T to widget %v", ev, ev, w)

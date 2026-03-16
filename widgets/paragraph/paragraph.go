@@ -9,8 +9,8 @@ package paragraph
 import (
 	"strings"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
 )
 
 //======================================================================

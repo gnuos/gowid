@@ -10,15 +10,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/vim"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/hpadding"
-	"github.com/gcla/gowid/widgets/pile"
-	"github.com/gcla/gowid/widgets/text"
-	"github.com/gcla/gowid/widgets/vpadding"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/vim"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/hpadding"
+	"github.com/gnuos/gowid/widgets/pile"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gnuos/gowid/widgets/vpadding"
 )
 
 //======================================================================
@@ -57,7 +57,6 @@ type Widget struct {
 	vSep    int
 	align   gowid.IHAlignment
 	focus   int // -1 means nothing selectable
-	wrap    bool
 	options Options
 	*gowid.Callbacks
 	gowid.SubWidgetsCallbacks
@@ -202,7 +201,7 @@ func (w *Widget) FindNextSelectable(dir gowid.Direction, wrap bool) (int, bool) 
 	return gowid.FindNextSelectableWidget(w.widgets, w.focus, dir, wrap)
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -243,7 +242,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 }
 
 // Scroll sequentially through the widgets on mouse scroll events or key up/down
-func UserInput(w IGrid, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IGrid, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	subfocus := w.Focus()
 	if !focus.Focus {
 		subfocus = -1
@@ -374,12 +373,11 @@ func UserInput(w IGrid, ev interface{}, size gowid.IRenderSize, focus gowid.Sele
 
 // Can't support RenderFixed{} because I need to know how many columns so I can roll over widgets
 // to the next line.
-//
 func GenerateWidgets(w IGrid, size gowid.IRenderSize, attrs gowid.IRenderContext) (pile.IWidget, int) {
 	focusIdx := w.Focus()
 	cols2, isColumns := size.(gowid.IColumns)
 	if !isColumns {
-		panic(errors.New("GridFlow widget must not be rendered in Fixed mode."))
+		panic(errors.New("gridFlow widget must not be rendered in Fixed mode"))
 	}
 	cols := cols2.Columns()
 
@@ -393,8 +391,8 @@ func GenerateWidgets(w IGrid, size gowid.IRenderSize, attrs gowid.IRenderContext
 	pileWidgets := make([]gowid.IContainerWidget, 0)
 
 	curInRow := 0
-	hSepWidget := &gowid.ContainerWidget{text.New(gwutil.StringOfLength(' ', w.HSep())), gowid.RenderWithUnits{U: w.HSep()}}
-	hBlankWidget := &gowid.ContainerWidget{text.New(gwutil.StringOfLength(' ', w.Width())), gowid.RenderWithUnits{U: w.Width()}}
+	hSepWidget := &gowid.ContainerWidget{IWidget: text.New(gwutil.StringOfLength(' ', w.HSep())), D: gowid.RenderWithUnits{U: w.HSep()}}
+	hBlankWidget := &gowid.ContainerWidget{IWidget: text.New(gwutil.StringOfLength(' ', w.Width())), D: gowid.RenderWithUnits{U: w.Width()}}
 	vBlank := text.New("")
 	vBlankWidget := vpadding.New(vBlank, gowid.VAlignTop{}, gowid.RenderWithUnits{U: w.VSep()})
 	curRow := make([]gowid.IContainerWidget, 0)
@@ -414,16 +412,16 @@ func GenerateWidgets(w IGrid, size gowid.IRenderSize, attrs gowid.IRenderContext
 			if i == focusIdx {
 				rowFocusIdx = len(curRow)
 			}
-			curRow = append(curRow, &gowid.ContainerWidget{w.SubWidgets()[i], gowid.RenderWithUnits{U: w.Width()}})
+			curRow = append(curRow, &gowid.ContainerWidget{IWidget: w.SubWidgets()[i], D: gowid.RenderWithUnits{U: w.Width()}})
 		}
 		curInRow += 1
 		if curInRow == numInRow {
 			cols := columns.New(curRow)
 			alignedColumns := hpadding.New(cols, w.HAlign(), gowid.RenderWithUnits{U: wWidth})
 			if !firstRow {
-				pileWidgets = append(pileWidgets, &gowid.ContainerWidget{vBlankWidget, gowid.RenderFlow{}})
+				pileWidgets = append(pileWidgets, &gowid.ContainerWidget{IWidget: vBlankWidget, D: gowid.RenderFlow{}})
 			}
-			pileWidgets = append(pileWidgets, &gowid.ContainerWidget{alignedColumns, gowid.RenderFlow{}})
+			pileWidgets = append(pileWidgets, &gowid.ContainerWidget{IWidget: alignedColumns, D: gowid.RenderFlow{}})
 			if rowFocusIdx != -1 {
 				// TODO: wrong wrong wrong
 				// It's not necessarily an IApp e.g. when called from Render - but it's ok because I haven't set

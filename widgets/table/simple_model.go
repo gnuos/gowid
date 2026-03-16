@@ -12,15 +12,15 @@ import (
 	"io"
 	"sort"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/divider"
-	"github.com/gcla/gowid/widgets/fill"
-	"github.com/gcla/gowid/widgets/isselected"
-	"github.com/gcla/gowid/widgets/radio"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/divider"
+	"github.com/gnuos/gowid/widgets/fill"
+	"github.com/gnuos/gowid/widgets/isselected"
+	"github.com/gnuos/gowid/widgets/radio"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -59,8 +59,8 @@ type SimpleModel struct {
 	Headers      []string
 	Data         [][]string
 	Comparators  []ICompare
-	SortOrder    []int // table row order as displayed -> table row identifier (RowId)
-	InvSortOrder []int // table row identifier (RowId) -> table row order as displayed
+	SortOrder    []int // table row order as displayed -> table row identifier (RowID)
+	InvSortOrder []int // table row identifier (RowID) -> table row order as displayed
 	Style        StyleOptions
 	Layout       LayoutOptions
 }
@@ -115,7 +115,7 @@ func NewSimpleModel(headers []string, res [][]string, opts ...SimpleOptions) *Si
 
 	sortOrder := make([]int, len(res))
 	invSortOrder := make([]int, len(res))
-	for i := 0; i < len(sortOrder); i++ {
+	for i := range len(sortOrder) {
 		sortOrder[i] = i
 		invSortOrder[i] = i
 	}
@@ -157,7 +157,7 @@ func (c *SimpleModel) Rows() int {
 }
 
 var widthOneHeightMax RenderWithUnitsMax = RenderWithUnitsMax{
-	RenderWithUnits: gowid.RenderWithUnits{1},
+	RenderWithUnits: gowid.RenderWithUnits{U: 1},
 }
 
 func (c *SimpleModel) HeaderWidget(ws []gowid.IWidget, focus int) gowid.IWidget {
@@ -189,7 +189,7 @@ func (c *SimpleModel) HeaderWidget(ws []gowid.IWidget, focus int) gowid.IWidget 
 }
 
 func (c *SimpleModel) HeaderWidgets() []gowid.IWidget {
-	if c.Headers == nil || len(c.Headers) == 0 {
+	if len(c.Headers) == 0 {
 		return nil
 	}
 
@@ -210,24 +210,26 @@ func (c *SimpleModel) HeaderWidgets() []gowid.IWidget {
 				rb1 := radio.New(&rbgroup)
 				rb1.Decoration.Right = "/"
 
-				rb1.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, widget gowid.IWidget) {
-					sorter := &SimpleTableByColumn{
-						SimpleModel: c,
-						Column:      i2,
-					}
-					sort.Sort(sorter)
-				}})
+				rb1.OnClick(gowid.WidgetCallback{Name: "cb",
+					WidgetChangedFunction: func(app gowid.IApp, widget gowid.IWidget) {
+						sorter := &SimpleTableByColumn{
+							SimpleModel: c,
+							Column:      i2,
+						}
+						sort.Sort(sorter)
+					}})
 
 				rb2 := radio.New(&rbgroup)
 				rb2.Decoration.Left = ""
 
-				rb2.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, widget gowid.IWidget) {
-					sorter := &SimpleTableByColumn{
-						SimpleModel: c,
-						Column:      i2,
-					}
-					sort.Sort(sort.Reverse(sorter))
-				}})
+				rb2.OnClick(gowid.WidgetCallback{Name: "cb",
+					WidgetChangedFunction: func(app gowid.IApp, widget gowid.IWidget) {
+						sorter := &SimpleTableByColumn{
+							SimpleModel: c,
+							Column:      i2,
+						}
+						sort.Sort(sort.Reverse(sorter))
+					}})
 
 				all = columns.NewFixed(label, rb1, rb2)
 			}
@@ -296,7 +298,7 @@ func (c *SimpleModel) GetData() [][]string {
 	return c.Data
 }
 
-func SimpleCellWidgets(c ISimpleDataProvider, row2 RowId) []gowid.IWidget {
+func SimpleCellWidgets(c ISimpleDataProvider, row2 RowID) []gowid.IWidget {
 	if int(row2) < len(c.GetData()) {
 		row := int(row2)
 		res := make([]gowid.IWidget, len(c.GetData()[row]))
@@ -308,19 +310,19 @@ func SimpleCellWidgets(c ISimpleDataProvider, row2 RowId) []gowid.IWidget {
 	return nil
 }
 
-func (c *SimpleModel) CellWidgets(rowid RowId) []gowid.IWidget {
+func (c *SimpleModel) CellWidgets(rowid RowID) []gowid.IWidget {
 	return SimpleCellWidgets(c, rowid)
 }
 
-func (c *SimpleModel) RowIdentifier(row int) (RowId, bool) {
+func (c *SimpleModel) RowIdentifier(row int) (RowID, bool) {
 	if row < 0 || row >= len(c.SortOrder) {
-		return RowId(-1), false
+		return RowID(-1), false
 	} else {
-		return RowId(c.SortOrder[row]), true
+		return RowID(c.SortOrder[row]), true
 	}
 }
 
-func (c *SimpleModel) IdentifierToRow(rowid RowId) (int, bool) {
+func (c *SimpleModel) IdentifierToRow(rowid RowID) (int, bool) {
 	if rowid < 0 || int(rowid) >= len(c.InvSortOrder) {
 		return -1, false
 	} else {

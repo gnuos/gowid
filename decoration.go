@@ -9,8 +9,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/gcla/gowid/gwutil"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gdamore/tcell/v3/color"
+	"github.com/gnuos/gowid/gwutil"
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/lucasb-eyer/go-colorful"
 	"github.com/pkg/errors"
@@ -24,7 +25,7 @@ import (
 // an underline preference, so when layered, the cell is rendered with an underline.
 const (
 	StyleNoneSet tcell.AttrMask = 0 // Just unstyled text.
-	StyleAllSet  tcell.AttrMask = tcell.AttrBold | tcell.AttrBlink | tcell.AttrReverse | tcell.AttrUnderline | tcell.AttrDim
+	StyleAllSet  tcell.AttrMask = tcell.AttrBold | tcell.AttrBlink | tcell.AttrReverse | tcell.AttrDim
 )
 
 // StyleAttrs allows the user to represent a set of styles, either affirmatively set (on) or unset (off)
@@ -36,7 +37,7 @@ type StyleAttrs struct {
 }
 
 // AllStyleMasks is an array of all the styles that can be applied to a Cell.
-var AllStyleMasks = [...]tcell.AttrMask{tcell.AttrBold, tcell.AttrBlink, tcell.AttrDim, tcell.AttrReverse, tcell.AttrUnderline}
+var AllStyleMasks = [...]tcell.AttrMask{tcell.AttrBold, tcell.AttrBlink, tcell.AttrDim, tcell.AttrReverse}
 
 // StyleNone expresses no preference for any text styles.
 var StyleNone = StyleAttrs{}
@@ -53,9 +54,6 @@ var StyleDim = StyleAttrs{tcell.AttrDim, tcell.AttrDim}
 // StyleReverse specifies the text should be displayed as reverse-video, but expresses no preference for other text styles.
 var StyleReverse = StyleAttrs{tcell.AttrReverse, tcell.AttrReverse}
 
-// StyleUnderline specifies the text should be underlined, but expresses no preference for other text styles.
-var StyleUnderline = StyleAttrs{tcell.AttrUnderline, tcell.AttrUnderline}
-
 // StyleBoldOnly specifies the text should be bold, and no other styling should apply.
 var StyleBoldOnly = StyleAttrs{tcell.AttrBold, StyleAllSet}
 
@@ -67,9 +65,6 @@ var StyleDimOnly = StyleAttrs{tcell.AttrDim, StyleAllSet}
 
 // StyleReverseOnly specifies the text should be displayed reverse-video, and no other styling should apply.
 var StyleReverseOnly = StyleAttrs{tcell.AttrReverse, StyleAllSet}
-
-// StyleUnderlineOnly specifies the text should be underlined, and no other styling should apply.
-var StyleUnderlineOnly = StyleAttrs{tcell.AttrUnderline, StyleAllSet}
 
 // IgnoreBase16 should be set to true if gowid should not consider colors 0-21 for closest-match when
 // interpolating RGB colors in 256-color space. You might use this if you use base16-shell, for example,
@@ -252,27 +247,27 @@ var (
 	ColorNone = MakeTCellNoColor()
 
 	// ColorDefault is an affirmative preference for the default terminal color
-	ColorDefault = MakeTCellColorExt(tcell.ColorDefault)
+	ColorDefault = MakeTCellColorExt(color.Default)
 
 	// Some pre-initialized color objects for use in applications e.g.
 	// MakePaletteEntry(ColorBlack, ColorRed)
-	ColorBlack      = MakeTCellColorExt(tcell.ColorBlack)
-	ColorRed        = MakeTCellColorExt(tcell.ColorRed)
-	ColorGreen      = MakeTCellColorExt(tcell.ColorGreen)
-	ColorLightGreen = MakeTCellColorExt(tcell.ColorLightGreen)
-	ColorYellow     = MakeTCellColorExt(tcell.ColorYellow)
-	ColorBlue       = MakeTCellColorExt(tcell.ColorBlue)
-	ColorLightBlue  = MakeTCellColorExt(tcell.ColorLightBlue)
-	ColorMagenta    = MakeTCellColorExt(tcell.ColorDarkMagenta)
-	ColorCyan       = MakeTCellColorExt(tcell.ColorDarkCyan)
-	ColorWhite      = MakeTCellColorExt(tcell.ColorWhite)
-	ColorDarkRed    = MakeTCellColorExt(tcell.ColorDarkRed)
-	ColorDarkGreen  = MakeTCellColorExt(tcell.ColorDarkGreen)
-	ColorDarkBlue   = MakeTCellColorExt(tcell.ColorDarkBlue)
-	ColorLightGray  = MakeTCellColorExt(tcell.ColorLightGray)
-	ColorDarkGray   = MakeTCellColorExt(tcell.ColorDarkGray)
-	ColorPurple     = MakeTCellColorExt(tcell.ColorPurple)
-	ColorOrange     = MakeTCellColorExt(tcell.ColorOrange)
+	ColorBlack      = MakeTCellColorExt(color.Black)
+	ColorRed        = MakeTCellColorExt(color.Red)
+	ColorGreen      = MakeTCellColorExt(color.Green)
+	ColorLightGreen = MakeTCellColorExt(color.LightGreen)
+	ColorYellow     = MakeTCellColorExt(color.Yellow)
+	ColorBlue       = MakeTCellColorExt(color.Blue)
+	ColorLightBlue  = MakeTCellColorExt(color.LightBlue)
+	ColorMagenta    = MakeTCellColorExt(color.DarkMagenta)
+	ColorCyan       = MakeTCellColorExt(color.DarkCyan)
+	ColorWhite      = MakeTCellColorExt(color.White)
+	ColorDarkRed    = MakeTCellColorExt(color.DarkRed)
+	ColorDarkGreen  = MakeTCellColorExt(color.DarkGreen)
+	ColorDarkBlue   = MakeTCellColorExt(color.DarkBlue)
+	ColorLightGray  = MakeTCellColorExt(color.LightGray)
+	ColorDarkGray   = MakeTCellColorExt(color.DarkGray)
+	ColorPurple     = MakeTCellColorExt(color.Purple)
+	ColorOrange     = MakeTCellColorExt(color.Orange)
 
 	longColorRE    = regexp.MustCompile(`^#([0-9a-fA-F]{2})([0-9a-fA-F]{2})([0-9a-fA-F]{2})$`)
 	shortColorRE   = regexp.MustCompile(`^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$`)
@@ -338,262 +333,262 @@ var (
 	}
 
 	colorful256 = []colorful.Color{
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'000000'),
-		colorful.Color{R: float64(0x80) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'800000'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x80) / float64(256), B: float64(0x00) / float64(256)}, //'008000'),
-		colorful.Color{R: float64(0x80) / float64(256), G: float64(0x80) / float64(256), B: float64(0x00) / float64(256)}, //'808000'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x80) / float64(256)}, //'000080'),
-		colorful.Color{R: float64(0x80) / float64(256), G: float64(0x00) / float64(256), B: float64(0x80) / float64(256)}, //'800080'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x80) / float64(256), B: float64(0x80) / float64(256)}, //'008080'),
-		colorful.Color{R: float64(0xc0) / float64(256), G: float64(0xc0) / float64(256), B: float64(0xc0) / float64(256)}, //'c0c0c0'),
-		colorful.Color{R: float64(0x80) / float64(256), G: float64(0x80) / float64(256), B: float64(0x80) / float64(256)}, //'808080'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'ff0000'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'00ff00'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'ffff00'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'0000ff'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'ff00ff'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'00ffff'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'ffffff'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'000000'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'00005f'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'000087'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'0000af'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'0000d7'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'0000ff'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'005f00'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'005f5f'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'005f87'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'005faf'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'005fd7'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'005fff'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'008700'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'00875f'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'008787'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'0087af'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'0087d7'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'0087ff'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'00af00'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'00af5f'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'00af87'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'00afaf'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'00afd7'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'00afff'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'00d700'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'00d75f'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'00d787'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'00d7af'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'00d7d7'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'00d7ff'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'00ff00'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'00ff5f'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'00ff87'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'00ffaf'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'00ffd7'),
-		colorful.Color{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'00ffff'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'5f0000'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'5f005f'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'5f0087'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'5f00af'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'5f00d7'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'5f00ff'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'5f5f00'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'5f5f5f'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'5f5f87'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'5f5faf'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'5f5fd7'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'5f5fff'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'5f8700'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'5f875f'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'5f8787'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'5f87af'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'5f87d7'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'5f87ff'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'5faf00'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'5faf5f'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'5faf87'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'5fafaf'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'5fafd7'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'5fafff'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'5fd700'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'5fd75f'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'5fd787'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'5fd7af'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'5fd7d7'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'5fd7ff'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'5fff00'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'5fff5f'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'5fff87'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'5fffaf'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'5fffd7'),
-		colorful.Color{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'5fffff'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'870000'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'87005f'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'870087'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'8700af'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'8700d7'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'8700ff'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'875f00'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'875f5f'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'875f87'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'875faf'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'875fd7'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'875fff'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'878700'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'87875f'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'878787'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'8787af'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'8787d7'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'8787ff'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'87af00'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'87af5f'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'87af87'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'87afaf'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'87afd7'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'87afff'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'87d700'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'87d75f'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'87d787'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'87d7af'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'87d7d7'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'87d7ff'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'87ff00'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'87ff5f'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'87ff87'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'87ffaf'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'87ffd7'),
-		colorful.Color{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'87ffff'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'af0000'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'af005f'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'af0087'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'af00af'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'af00d7'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'af00ff'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'af5f00'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'af5f5f'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'af5f87'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'af5faf'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'af5fd7'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'af5fff'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'af8700'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'af875f'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'af8787'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'af87af'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'af87d7'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'af87ff'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'afaf00'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'afaf5f'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'afaf87'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'afafaf'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'afafd7'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'afafff'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'afd700'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'afd75f'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'afd787'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'afd7af'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'afd7d7'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'afd7ff'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'afff00'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'afff5f'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'afff87'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'afffaf'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'afffd7'),
-		colorful.Color{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'afffff'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'d70000'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'d7005f'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'d70087'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'d700af'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'d700d7'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'d700ff'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'d75f00'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'d75f5f'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'d75f87'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'d75faf'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'d75fd7'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'d75fff'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'d78700'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'d7875f'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'d78787'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'d787af'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'d787d7'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'d787ff'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'d7af00'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'d7af5f'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'d7af87'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'d7afaf'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'d7afd7'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'d7afff'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'d7d700'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'d7d75f'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'d7d787'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'d7d7af'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'d7d7d7'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'d7d7ff'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'d7ff00'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'d7ff5f'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'d7ff87'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'d7ffaf'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'d7ffd7'),
-		colorful.Color{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'d7ffff'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'ff0000'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'ff005f'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'ff0087'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'ff00af'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'ff00d7'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'ff00ff'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'ff5f00'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'ff5f5f'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'ff5f87'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'ff5faf'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'ff5fd7'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'ff5fff'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'ff8700'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'ff875f'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'ff8787'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'ff87af'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'ff87d7'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'ff87ff'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'ffaf00'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'ffaf5f'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'ffaf87'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'ffafaf'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'ffafd7'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'ffafff'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'ffd700'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'ffd75f'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'ffd787'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'ffd7af'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'ffd7d7'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'ffd7ff'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'ffff00'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'ffff5f'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'ffff87'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'ffffaf'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'ffffd7'),
-		colorful.Color{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'ffffff'),
-		colorful.Color{R: float64(0x08) / float64(256), G: float64(0x08) / float64(256), B: float64(0x08) / float64(256)}, //'080808'),
-		colorful.Color{R: float64(0x12) / float64(256), G: float64(0x12) / float64(256), B: float64(0x12) / float64(256)}, //'121212'),
-		colorful.Color{R: float64(0x1c) / float64(256), G: float64(0x1c) / float64(256), B: float64(0x1c) / float64(256)}, //'1c1c1c'),
-		colorful.Color{R: float64(0x26) / float64(256), G: float64(0x26) / float64(256), B: float64(0x26) / float64(256)}, //'262626'),
-		colorful.Color{R: float64(0x30) / float64(256), G: float64(0x30) / float64(256), B: float64(0x30) / float64(256)}, //'303030'),
-		colorful.Color{R: float64(0x3a) / float64(256), G: float64(0x3a) / float64(256), B: float64(0x3a) / float64(256)}, //'3a3a3a'),
-		colorful.Color{R: float64(0x44) / float64(256), G: float64(0x44) / float64(256), B: float64(0x44) / float64(256)}, //'444444'),
-		colorful.Color{R: float64(0x4e) / float64(256), G: float64(0x4e) / float64(256), B: float64(0x4e) / float64(256)}, //'4e4e4e'),
-		colorful.Color{R: float64(0x58) / float64(256), G: float64(0x58) / float64(256), B: float64(0x58) / float64(256)}, //'585858'),
-		colorful.Color{R: float64(0x62) / float64(256), G: float64(0x62) / float64(256), B: float64(0x62) / float64(256)}, //'626262'),
-		colorful.Color{R: float64(0x6c) / float64(256), G: float64(0x6c) / float64(256), B: float64(0x6c) / float64(256)}, //'6c6c6c'),
-		colorful.Color{R: float64(0x76) / float64(256), G: float64(0x76) / float64(256), B: float64(0x76) / float64(256)}, //'767676'),
-		colorful.Color{R: float64(0x80) / float64(256), G: float64(0x80) / float64(256), B: float64(0x80) / float64(256)}, //'808080'),
-		colorful.Color{R: float64(0x8a) / float64(256), G: float64(0x8a) / float64(256), B: float64(0x8a) / float64(256)}, //'8a8a8a'),
-		colorful.Color{R: float64(0x94) / float64(256), G: float64(0x94) / float64(256), B: float64(0x94) / float64(256)}, //'949494'),
-		colorful.Color{R: float64(0x9e) / float64(256), G: float64(0x9e) / float64(256), B: float64(0x9e) / float64(256)}, //'9e9e9e'),
-		colorful.Color{R: float64(0xa8) / float64(256), G: float64(0xa8) / float64(256), B: float64(0xa8) / float64(256)}, //'a8a8a8'),
-		colorful.Color{R: float64(0xb2) / float64(256), G: float64(0xb2) / float64(256), B: float64(0xb2) / float64(256)}, //'b2b2b2'),
-		colorful.Color{R: float64(0xbc) / float64(256), G: float64(0xbc) / float64(256), B: float64(0xbc) / float64(256)}, //'bcbcbc'),
-		colorful.Color{R: float64(0xc6) / float64(256), G: float64(0xc6) / float64(256), B: float64(0xc6) / float64(256)}, //'c6c6c6'),
-		colorful.Color{R: float64(0xd0) / float64(256), G: float64(0xd0) / float64(256), B: float64(0xd0) / float64(256)}, //'d0d0d0'),
-		colorful.Color{R: float64(0xda) / float64(256), G: float64(0xda) / float64(256), B: float64(0xda) / float64(256)}, //'dadada'),
-		colorful.Color{R: float64(0xe4) / float64(256), G: float64(0xe4) / float64(256), B: float64(0xe4) / float64(256)}, //'e4e4e4'),
-		colorful.Color{R: float64(0xee) / float64(256), G: float64(0xee) / float64(256), B: float64(0xee) / float64(256)}, //'eeeeee'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'000000'),
+		{R: float64(0x80) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'800000'),
+		{R: float64(0x00) / float64(256), G: float64(0x80) / float64(256), B: float64(0x00) / float64(256)}, //'008000'),
+		{R: float64(0x80) / float64(256), G: float64(0x80) / float64(256), B: float64(0x00) / float64(256)}, //'808000'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x80) / float64(256)}, //'000080'),
+		{R: float64(0x80) / float64(256), G: float64(0x00) / float64(256), B: float64(0x80) / float64(256)}, //'800080'),
+		{R: float64(0x00) / float64(256), G: float64(0x80) / float64(256), B: float64(0x80) / float64(256)}, //'008080'),
+		{R: float64(0xc0) / float64(256), G: float64(0xc0) / float64(256), B: float64(0xc0) / float64(256)}, //'c0c0c0'),
+		{R: float64(0x80) / float64(256), G: float64(0x80) / float64(256), B: float64(0x80) / float64(256)}, //'808080'),
+		{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'ff0000'),
+		{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'00ff00'),
+		{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'ffff00'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'0000ff'),
+		{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'ff00ff'),
+		{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'00ffff'),
+		{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'ffffff'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'000000'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'00005f'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'000087'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'0000af'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'0000d7'),
+		{R: float64(0x00) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'0000ff'),
+		{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'005f00'),
+		{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'005f5f'),
+		{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'005f87'),
+		{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'005faf'),
+		{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'005fd7'),
+		{R: float64(0x00) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'005fff'),
+		{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'008700'),
+		{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'00875f'),
+		{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'008787'),
+		{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'0087af'),
+		{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'0087d7'),
+		{R: float64(0x00) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'0087ff'),
+		{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'00af00'),
+		{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'00af5f'),
+		{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'00af87'),
+		{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'00afaf'),
+		{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'00afd7'),
+		{R: float64(0x00) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'00afff'),
+		{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'00d700'),
+		{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'00d75f'),
+		{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'00d787'),
+		{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'00d7af'),
+		{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'00d7d7'),
+		{R: float64(0x00) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'00d7ff'),
+		{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'00ff00'),
+		{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'00ff5f'),
+		{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'00ff87'),
+		{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'00ffaf'),
+		{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'00ffd7'),
+		{R: float64(0x00) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'00ffff'),
+		{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'5f0000'),
+		{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'5f005f'),
+		{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'5f0087'),
+		{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'5f00af'),
+		{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'5f00d7'),
+		{R: float64(0x5f) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'5f00ff'),
+		{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'5f5f00'),
+		{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'5f5f5f'),
+		{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'5f5f87'),
+		{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'5f5faf'),
+		{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'5f5fd7'),
+		{R: float64(0x5f) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'5f5fff'),
+		{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'5f8700'),
+		{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'5f875f'),
+		{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'5f8787'),
+		{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'5f87af'),
+		{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'5f87d7'),
+		{R: float64(0x5f) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'5f87ff'),
+		{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'5faf00'),
+		{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'5faf5f'),
+		{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'5faf87'),
+		{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'5fafaf'),
+		{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'5fafd7'),
+		{R: float64(0x5f) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'5fafff'),
+		{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'5fd700'),
+		{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'5fd75f'),
+		{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'5fd787'),
+		{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'5fd7af'),
+		{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'5fd7d7'),
+		{R: float64(0x5f) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'5fd7ff'),
+		{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'5fff00'),
+		{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'5fff5f'),
+		{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'5fff87'),
+		{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'5fffaf'),
+		{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'5fffd7'),
+		{R: float64(0x5f) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'5fffff'),
+		{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'870000'),
+		{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'87005f'),
+		{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'870087'),
+		{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'8700af'),
+		{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'8700d7'),
+		{R: float64(0x87) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'8700ff'),
+		{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'875f00'),
+		{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'875f5f'),
+		{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'875f87'),
+		{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'875faf'),
+		{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'875fd7'),
+		{R: float64(0x87) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'875fff'),
+		{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'878700'),
+		{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'87875f'),
+		{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'878787'),
+		{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'8787af'),
+		{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'8787d7'),
+		{R: float64(0x87) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'8787ff'),
+		{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'87af00'),
+		{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'87af5f'),
+		{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'87af87'),
+		{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'87afaf'),
+		{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'87afd7'),
+		{R: float64(0x87) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'87afff'),
+		{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'87d700'),
+		{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'87d75f'),
+		{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'87d787'),
+		{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'87d7af'),
+		{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'87d7d7'),
+		{R: float64(0x87) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'87d7ff'),
+		{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'87ff00'),
+		{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'87ff5f'),
+		{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'87ff87'),
+		{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'87ffaf'),
+		{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'87ffd7'),
+		{R: float64(0x87) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'87ffff'),
+		{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'af0000'),
+		{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'af005f'),
+		{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'af0087'),
+		{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'af00af'),
+		{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'af00d7'),
+		{R: float64(0xaf) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'af00ff'),
+		{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'af5f00'),
+		{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'af5f5f'),
+		{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'af5f87'),
+		{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'af5faf'),
+		{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'af5fd7'),
+		{R: float64(0xaf) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'af5fff'),
+		{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'af8700'),
+		{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'af875f'),
+		{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'af8787'),
+		{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'af87af'),
+		{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'af87d7'),
+		{R: float64(0xaf) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'af87ff'),
+		{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'afaf00'),
+		{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'afaf5f'),
+		{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'afaf87'),
+		{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'afafaf'),
+		{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'afafd7'),
+		{R: float64(0xaf) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'afafff'),
+		{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'afd700'),
+		{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'afd75f'),
+		{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'afd787'),
+		{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'afd7af'),
+		{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'afd7d7'),
+		{R: float64(0xaf) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'afd7ff'),
+		{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'afff00'),
+		{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'afff5f'),
+		{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'afff87'),
+		{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'afffaf'),
+		{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'afffd7'),
+		{R: float64(0xaf) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'afffff'),
+		{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'d70000'),
+		{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'d7005f'),
+		{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'d70087'),
+		{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'d700af'),
+		{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'d700d7'),
+		{R: float64(0xd7) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'d700ff'),
+		{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'d75f00'),
+		{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'d75f5f'),
+		{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'d75f87'),
+		{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'d75faf'),
+		{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'d75fd7'),
+		{R: float64(0xd7) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'d75fff'),
+		{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'d78700'),
+		{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'d7875f'),
+		{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'d78787'),
+		{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'d787af'),
+		{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'d787d7'),
+		{R: float64(0xd7) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'d787ff'),
+		{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'d7af00'),
+		{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'d7af5f'),
+		{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'d7af87'),
+		{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'d7afaf'),
+		{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'d7afd7'),
+		{R: float64(0xd7) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'d7afff'),
+		{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'d7d700'),
+		{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'d7d75f'),
+		{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'d7d787'),
+		{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'d7d7af'),
+		{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'d7d7d7'),
+		{R: float64(0xd7) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'d7d7ff'),
+		{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'d7ff00'),
+		{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'d7ff5f'),
+		{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'d7ff87'),
+		{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'d7ffaf'),
+		{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'d7ffd7'),
+		{R: float64(0xd7) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'d7ffff'),
+		{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0x00) / float64(256)}, //'ff0000'),
+		{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0x5f) / float64(256)}, //'ff005f'),
+		{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0x87) / float64(256)}, //'ff0087'),
+		{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0xaf) / float64(256)}, //'ff00af'),
+		{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0xd7) / float64(256)}, //'ff00d7'),
+		{R: float64(0xff) / float64(256), G: float64(0x00) / float64(256), B: float64(0xff) / float64(256)}, //'ff00ff'),
+		{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x00) / float64(256)}, //'ff5f00'),
+		{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x5f) / float64(256)}, //'ff5f5f'),
+		{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0x87) / float64(256)}, //'ff5f87'),
+		{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xaf) / float64(256)}, //'ff5faf'),
+		{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xd7) / float64(256)}, //'ff5fd7'),
+		{R: float64(0xff) / float64(256), G: float64(0x5f) / float64(256), B: float64(0xff) / float64(256)}, //'ff5fff'),
+		{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0x00) / float64(256)}, //'ff8700'),
+		{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0x5f) / float64(256)}, //'ff875f'),
+		{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0x87) / float64(256)}, //'ff8787'),
+		{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0xaf) / float64(256)}, //'ff87af'),
+		{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0xd7) / float64(256)}, //'ff87d7'),
+		{R: float64(0xff) / float64(256), G: float64(0x87) / float64(256), B: float64(0xff) / float64(256)}, //'ff87ff'),
+		{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x00) / float64(256)}, //'ffaf00'),
+		{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x5f) / float64(256)}, //'ffaf5f'),
+		{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0x87) / float64(256)}, //'ffaf87'),
+		{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xaf) / float64(256)}, //'ffafaf'),
+		{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xd7) / float64(256)}, //'ffafd7'),
+		{R: float64(0xff) / float64(256), G: float64(0xaf) / float64(256), B: float64(0xff) / float64(256)}, //'ffafff'),
+		{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x00) / float64(256)}, //'ffd700'),
+		{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x5f) / float64(256)}, //'ffd75f'),
+		{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0x87) / float64(256)}, //'ffd787'),
+		{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xaf) / float64(256)}, //'ffd7af'),
+		{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xd7) / float64(256)}, //'ffd7d7'),
+		{R: float64(0xff) / float64(256), G: float64(0xd7) / float64(256), B: float64(0xff) / float64(256)}, //'ffd7ff'),
+		{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0x00) / float64(256)}, //'ffff00'),
+		{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0x5f) / float64(256)}, //'ffff5f'),
+		{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0x87) / float64(256)}, //'ffff87'),
+		{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0xaf) / float64(256)}, //'ffffaf'),
+		{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0xd7) / float64(256)}, //'ffffd7'),
+		{R: float64(0xff) / float64(256), G: float64(0xff) / float64(256), B: float64(0xff) / float64(256)}, //'ffffff'),
+		{R: float64(0x08) / float64(256), G: float64(0x08) / float64(256), B: float64(0x08) / float64(256)}, //'080808'),
+		{R: float64(0x12) / float64(256), G: float64(0x12) / float64(256), B: float64(0x12) / float64(256)}, //'121212'),
+		{R: float64(0x1c) / float64(256), G: float64(0x1c) / float64(256), B: float64(0x1c) / float64(256)}, //'1c1c1c'),
+		{R: float64(0x26) / float64(256), G: float64(0x26) / float64(256), B: float64(0x26) / float64(256)}, //'262626'),
+		{R: float64(0x30) / float64(256), G: float64(0x30) / float64(256), B: float64(0x30) / float64(256)}, //'303030'),
+		{R: float64(0x3a) / float64(256), G: float64(0x3a) / float64(256), B: float64(0x3a) / float64(256)}, //'3a3a3a'),
+		{R: float64(0x44) / float64(256), G: float64(0x44) / float64(256), B: float64(0x44) / float64(256)}, //'444444'),
+		{R: float64(0x4e) / float64(256), G: float64(0x4e) / float64(256), B: float64(0x4e) / float64(256)}, //'4e4e4e'),
+		{R: float64(0x58) / float64(256), G: float64(0x58) / float64(256), B: float64(0x58) / float64(256)}, //'585858'),
+		{R: float64(0x62) / float64(256), G: float64(0x62) / float64(256), B: float64(0x62) / float64(256)}, //'626262'),
+		{R: float64(0x6c) / float64(256), G: float64(0x6c) / float64(256), B: float64(0x6c) / float64(256)}, //'6c6c6c'),
+		{R: float64(0x76) / float64(256), G: float64(0x76) / float64(256), B: float64(0x76) / float64(256)}, //'767676'),
+		{R: float64(0x80) / float64(256), G: float64(0x80) / float64(256), B: float64(0x80) / float64(256)}, //'808080'),
+		{R: float64(0x8a) / float64(256), G: float64(0x8a) / float64(256), B: float64(0x8a) / float64(256)}, //'8a8a8a'),
+		{R: float64(0x94) / float64(256), G: float64(0x94) / float64(256), B: float64(0x94) / float64(256)}, //'949494'),
+		{R: float64(0x9e) / float64(256), G: float64(0x9e) / float64(256), B: float64(0x9e) / float64(256)}, //'9e9e9e'),
+		{R: float64(0xa8) / float64(256), G: float64(0xa8) / float64(256), B: float64(0xa8) / float64(256)}, //'a8a8a8'),
+		{R: float64(0xb2) / float64(256), G: float64(0xb2) / float64(256), B: float64(0xb2) / float64(256)}, //'b2b2b2'),
+		{R: float64(0xbc) / float64(256), G: float64(0xbc) / float64(256), B: float64(0xbc) / float64(256)}, //'bcbcbc'),
+		{R: float64(0xc6) / float64(256), G: float64(0xc6) / float64(256), B: float64(0xc6) / float64(256)}, //'c6c6c6'),
+		{R: float64(0xd0) / float64(256), G: float64(0xd0) / float64(256), B: float64(0xd0) / float64(256)}, //'d0d0d0'),
+		{R: float64(0xda) / float64(256), G: float64(0xda) / float64(256), B: float64(0xda) / float64(256)}, //'dadada'),
+		{R: float64(0xe4) / float64(256), G: float64(0xe4) / float64(256), B: float64(0xe4) / float64(256)}, //'e4e4e4'),
+		{R: float64(0xee) / float64(256), G: float64(0xee) / float64(256), B: float64(0xee) / float64(256)}, //'eeeeee'),
 	}
 
 	term8 = []TCellColor{
@@ -627,263 +622,263 @@ var (
 	}
 
 	term256 = []TCellColor{
-		MakeTCellColorExt(tcell.ColorBlack),
-		MakeTCellColorExt(tcell.ColorMaroon),
-		MakeTCellColorExt(tcell.ColorGreen),
-		MakeTCellColorExt(tcell.ColorOlive),
-		MakeTCellColorExt(tcell.ColorNavy),
-		MakeTCellColorExt(tcell.ColorPurple),
-		MakeTCellColorExt(tcell.ColorTeal),
-		MakeTCellColorExt(tcell.ColorSilver),
-		MakeTCellColorExt(tcell.ColorGray),
-		MakeTCellColorExt(tcell.ColorRed),
-		MakeTCellColorExt(tcell.ColorLime),
-		MakeTCellColorExt(tcell.ColorYellow),
-		MakeTCellColorExt(tcell.ColorBlue),
-		MakeTCellColorExt(tcell.ColorFuchsia),
-		MakeTCellColorExt(tcell.ColorAqua),
-		MakeTCellColorExt(tcell.ColorWhite),
+		MakeTCellColorExt(color.Black),
+		MakeTCellColorExt(color.Maroon),
+		MakeTCellColorExt(color.Green),
+		MakeTCellColorExt(color.Olive),
+		MakeTCellColorExt(color.Navy),
+		MakeTCellColorExt(color.Purple),
+		MakeTCellColorExt(color.Teal),
+		MakeTCellColorExt(color.Silver),
+		MakeTCellColorExt(color.Gray),
+		MakeTCellColorExt(color.Red),
+		MakeTCellColorExt(color.Lime),
+		MakeTCellColorExt(color.Yellow),
+		MakeTCellColorExt(color.Blue),
+		MakeTCellColorExt(color.Fuchsia),
+		MakeTCellColorExt(color.Aqua),
+		MakeTCellColorExt(color.White),
 		//
-		MakeTCellColorExt(tcell.Color16),
-		MakeTCellColorExt(tcell.Color17),
-		MakeTCellColorExt(tcell.Color18),
-		MakeTCellColorExt(tcell.Color19),
-		MakeTCellColorExt(tcell.Color20),
-		MakeTCellColorExt(tcell.Color21),
-		MakeTCellColorExt(tcell.Color22),
-		MakeTCellColorExt(tcell.Color23),
-		MakeTCellColorExt(tcell.Color24),
-		MakeTCellColorExt(tcell.Color25),
-		MakeTCellColorExt(tcell.Color26),
-		MakeTCellColorExt(tcell.Color27),
-		MakeTCellColorExt(tcell.Color28),
-		MakeTCellColorExt(tcell.Color29),
-		MakeTCellColorExt(tcell.Color30),
-		MakeTCellColorExt(tcell.Color31),
-		MakeTCellColorExt(tcell.Color32),
-		MakeTCellColorExt(tcell.Color33),
-		MakeTCellColorExt(tcell.Color34),
-		MakeTCellColorExt(tcell.Color35),
-		MakeTCellColorExt(tcell.Color36),
-		MakeTCellColorExt(tcell.Color37),
-		MakeTCellColorExt(tcell.Color38),
-		MakeTCellColorExt(tcell.Color39),
-		MakeTCellColorExt(tcell.Color40),
-		MakeTCellColorExt(tcell.Color41),
-		MakeTCellColorExt(tcell.Color42),
-		MakeTCellColorExt(tcell.Color43),
-		MakeTCellColorExt(tcell.Color44),
-		MakeTCellColorExt(tcell.Color45),
-		MakeTCellColorExt(tcell.Color46),
-		MakeTCellColorExt(tcell.Color47),
-		MakeTCellColorExt(tcell.Color48),
-		MakeTCellColorExt(tcell.Color49),
-		MakeTCellColorExt(tcell.Color50),
-		MakeTCellColorExt(tcell.Color51),
-		MakeTCellColorExt(tcell.Color52),
-		MakeTCellColorExt(tcell.Color53),
-		MakeTCellColorExt(tcell.Color54),
-		MakeTCellColorExt(tcell.Color55),
-		MakeTCellColorExt(tcell.Color56),
-		MakeTCellColorExt(tcell.Color57),
-		MakeTCellColorExt(tcell.Color58),
-		MakeTCellColorExt(tcell.Color59),
-		MakeTCellColorExt(tcell.Color60),
-		MakeTCellColorExt(tcell.Color61),
-		MakeTCellColorExt(tcell.Color62),
-		MakeTCellColorExt(tcell.Color63),
-		MakeTCellColorExt(tcell.Color64),
-		MakeTCellColorExt(tcell.Color65),
-		MakeTCellColorExt(tcell.Color66),
-		MakeTCellColorExt(tcell.Color67),
-		MakeTCellColorExt(tcell.Color68),
-		MakeTCellColorExt(tcell.Color69),
-		MakeTCellColorExt(tcell.Color70),
-		MakeTCellColorExt(tcell.Color71),
-		MakeTCellColorExt(tcell.Color72),
-		MakeTCellColorExt(tcell.Color73),
-		MakeTCellColorExt(tcell.Color74),
-		MakeTCellColorExt(tcell.Color75),
-		MakeTCellColorExt(tcell.Color76),
-		MakeTCellColorExt(tcell.Color77),
-		MakeTCellColorExt(tcell.Color78),
-		MakeTCellColorExt(tcell.Color79),
-		MakeTCellColorExt(tcell.Color80),
-		MakeTCellColorExt(tcell.Color81),
-		MakeTCellColorExt(tcell.Color82),
-		MakeTCellColorExt(tcell.Color83),
-		MakeTCellColorExt(tcell.Color84),
-		MakeTCellColorExt(tcell.Color85),
-		MakeTCellColorExt(tcell.Color86),
-		MakeTCellColorExt(tcell.Color87),
-		MakeTCellColorExt(tcell.Color88),
-		MakeTCellColorExt(tcell.Color89),
-		MakeTCellColorExt(tcell.Color90),
-		MakeTCellColorExt(tcell.Color91),
-		MakeTCellColorExt(tcell.Color92),
-		MakeTCellColorExt(tcell.Color93),
-		MakeTCellColorExt(tcell.Color94),
-		MakeTCellColorExt(tcell.Color95),
-		MakeTCellColorExt(tcell.Color96),
-		MakeTCellColorExt(tcell.Color97),
-		MakeTCellColorExt(tcell.Color98),
-		MakeTCellColorExt(tcell.Color99),
-		MakeTCellColorExt(tcell.Color100),
-		MakeTCellColorExt(tcell.Color101),
-		MakeTCellColorExt(tcell.Color102),
-		MakeTCellColorExt(tcell.Color103),
-		MakeTCellColorExt(tcell.Color104),
-		MakeTCellColorExt(tcell.Color105),
-		MakeTCellColorExt(tcell.Color106),
-		MakeTCellColorExt(tcell.Color107),
-		MakeTCellColorExt(tcell.Color108),
-		MakeTCellColorExt(tcell.Color109),
-		MakeTCellColorExt(tcell.Color110),
-		MakeTCellColorExt(tcell.Color111),
-		MakeTCellColorExt(tcell.Color112),
-		MakeTCellColorExt(tcell.Color113),
-		MakeTCellColorExt(tcell.Color114),
-		MakeTCellColorExt(tcell.Color115),
-		MakeTCellColorExt(tcell.Color116),
-		MakeTCellColorExt(tcell.Color117),
-		MakeTCellColorExt(tcell.Color118),
-		MakeTCellColorExt(tcell.Color119),
-		MakeTCellColorExt(tcell.Color120),
-		MakeTCellColorExt(tcell.Color121),
-		MakeTCellColorExt(tcell.Color122),
-		MakeTCellColorExt(tcell.Color123),
-		MakeTCellColorExt(tcell.Color124),
-		MakeTCellColorExt(tcell.Color125),
-		MakeTCellColorExt(tcell.Color126),
-		MakeTCellColorExt(tcell.Color127),
-		MakeTCellColorExt(tcell.Color128),
-		MakeTCellColorExt(tcell.Color129),
-		MakeTCellColorExt(tcell.Color130),
-		MakeTCellColorExt(tcell.Color131),
-		MakeTCellColorExt(tcell.Color132),
-		MakeTCellColorExt(tcell.Color133),
-		MakeTCellColorExt(tcell.Color134),
-		MakeTCellColorExt(tcell.Color135),
-		MakeTCellColorExt(tcell.Color136),
-		MakeTCellColorExt(tcell.Color137),
-		MakeTCellColorExt(tcell.Color138),
-		MakeTCellColorExt(tcell.Color139),
-		MakeTCellColorExt(tcell.Color140),
-		MakeTCellColorExt(tcell.Color141),
-		MakeTCellColorExt(tcell.Color142),
-		MakeTCellColorExt(tcell.Color143),
-		MakeTCellColorExt(tcell.Color144),
-		MakeTCellColorExt(tcell.Color145),
-		MakeTCellColorExt(tcell.Color146),
-		MakeTCellColorExt(tcell.Color147),
-		MakeTCellColorExt(tcell.Color148),
-		MakeTCellColorExt(tcell.Color149),
-		MakeTCellColorExt(tcell.Color150),
-		MakeTCellColorExt(tcell.Color151),
-		MakeTCellColorExt(tcell.Color152),
-		MakeTCellColorExt(tcell.Color153),
-		MakeTCellColorExt(tcell.Color154),
-		MakeTCellColorExt(tcell.Color155),
-		MakeTCellColorExt(tcell.Color156),
-		MakeTCellColorExt(tcell.Color157),
-		MakeTCellColorExt(tcell.Color158),
-		MakeTCellColorExt(tcell.Color159),
-		MakeTCellColorExt(tcell.Color160),
-		MakeTCellColorExt(tcell.Color161),
-		MakeTCellColorExt(tcell.Color162),
-		MakeTCellColorExt(tcell.Color163),
-		MakeTCellColorExt(tcell.Color164),
-		MakeTCellColorExt(tcell.Color165),
-		MakeTCellColorExt(tcell.Color166),
-		MakeTCellColorExt(tcell.Color167),
-		MakeTCellColorExt(tcell.Color168),
-		MakeTCellColorExt(tcell.Color169),
-		MakeTCellColorExt(tcell.Color170),
-		MakeTCellColorExt(tcell.Color171),
-		MakeTCellColorExt(tcell.Color172),
-		MakeTCellColorExt(tcell.Color173),
-		MakeTCellColorExt(tcell.Color174),
-		MakeTCellColorExt(tcell.Color175),
-		MakeTCellColorExt(tcell.Color176),
-		MakeTCellColorExt(tcell.Color177),
-		MakeTCellColorExt(tcell.Color178),
-		MakeTCellColorExt(tcell.Color179),
-		MakeTCellColorExt(tcell.Color180),
-		MakeTCellColorExt(tcell.Color181),
-		MakeTCellColorExt(tcell.Color182),
-		MakeTCellColorExt(tcell.Color183),
-		MakeTCellColorExt(tcell.Color184),
-		MakeTCellColorExt(tcell.Color185),
-		MakeTCellColorExt(tcell.Color186),
-		MakeTCellColorExt(tcell.Color187),
-		MakeTCellColorExt(tcell.Color188),
-		MakeTCellColorExt(tcell.Color189),
-		MakeTCellColorExt(tcell.Color190),
-		MakeTCellColorExt(tcell.Color191),
-		MakeTCellColorExt(tcell.Color192),
-		MakeTCellColorExt(tcell.Color193),
-		MakeTCellColorExt(tcell.Color194),
-		MakeTCellColorExt(tcell.Color195),
-		MakeTCellColorExt(tcell.Color196),
-		MakeTCellColorExt(tcell.Color197),
-		MakeTCellColorExt(tcell.Color198),
-		MakeTCellColorExt(tcell.Color199),
-		MakeTCellColorExt(tcell.Color200),
-		MakeTCellColorExt(tcell.Color201),
-		MakeTCellColorExt(tcell.Color202),
-		MakeTCellColorExt(tcell.Color203),
-		MakeTCellColorExt(tcell.Color204),
-		MakeTCellColorExt(tcell.Color205),
-		MakeTCellColorExt(tcell.Color206),
-		MakeTCellColorExt(tcell.Color207),
-		MakeTCellColorExt(tcell.Color208),
-		MakeTCellColorExt(tcell.Color209),
-		MakeTCellColorExt(tcell.Color210),
-		MakeTCellColorExt(tcell.Color211),
-		MakeTCellColorExt(tcell.Color212),
-		MakeTCellColorExt(tcell.Color213),
-		MakeTCellColorExt(tcell.Color214),
-		MakeTCellColorExt(tcell.Color215),
-		MakeTCellColorExt(tcell.Color216),
-		MakeTCellColorExt(tcell.Color217),
-		MakeTCellColorExt(tcell.Color218),
-		MakeTCellColorExt(tcell.Color219),
-		MakeTCellColorExt(tcell.Color220),
-		MakeTCellColorExt(tcell.Color221),
-		MakeTCellColorExt(tcell.Color222),
-		MakeTCellColorExt(tcell.Color223),
-		MakeTCellColorExt(tcell.Color224),
-		MakeTCellColorExt(tcell.Color225),
-		MakeTCellColorExt(tcell.Color226),
-		MakeTCellColorExt(tcell.Color227),
-		MakeTCellColorExt(tcell.Color228),
-		MakeTCellColorExt(tcell.Color229),
-		MakeTCellColorExt(tcell.Color230),
-		MakeTCellColorExt(tcell.Color231),
-		MakeTCellColorExt(tcell.Color232),
-		MakeTCellColorExt(tcell.Color233),
-		MakeTCellColorExt(tcell.Color234),
-		MakeTCellColorExt(tcell.Color235),
-		MakeTCellColorExt(tcell.Color236),
-		MakeTCellColorExt(tcell.Color237),
-		MakeTCellColorExt(tcell.Color238),
-		MakeTCellColorExt(tcell.Color239),
-		MakeTCellColorExt(tcell.Color240),
-		MakeTCellColorExt(tcell.Color241),
-		MakeTCellColorExt(tcell.Color242),
-		MakeTCellColorExt(tcell.Color243),
-		MakeTCellColorExt(tcell.Color244),
-		MakeTCellColorExt(tcell.Color245),
-		MakeTCellColorExt(tcell.Color246),
-		MakeTCellColorExt(tcell.Color247),
-		MakeTCellColorExt(tcell.Color248),
-		MakeTCellColorExt(tcell.Color249),
-		MakeTCellColorExt(tcell.Color250),
-		MakeTCellColorExt(tcell.Color251),
-		MakeTCellColorExt(tcell.Color252),
-		MakeTCellColorExt(tcell.Color253),
-		MakeTCellColorExt(tcell.Color254),
-		MakeTCellColorExt(tcell.Color255),
+		MakeTCellColorExt(color.XTerm16),
+		MakeTCellColorExt(color.XTerm17),
+		MakeTCellColorExt(color.XTerm18),
+		MakeTCellColorExt(color.XTerm19),
+		MakeTCellColorExt(color.XTerm20),
+		MakeTCellColorExt(color.XTerm21),
+		MakeTCellColorExt(color.XTerm22),
+		MakeTCellColorExt(color.XTerm23),
+		MakeTCellColorExt(color.XTerm24),
+		MakeTCellColorExt(color.XTerm25),
+		MakeTCellColorExt(color.XTerm26),
+		MakeTCellColorExt(color.XTerm27),
+		MakeTCellColorExt(color.XTerm28),
+		MakeTCellColorExt(color.XTerm29),
+		MakeTCellColorExt(color.XTerm30),
+		MakeTCellColorExt(color.XTerm31),
+		MakeTCellColorExt(color.XTerm32),
+		MakeTCellColorExt(color.XTerm33),
+		MakeTCellColorExt(color.XTerm34),
+		MakeTCellColorExt(color.XTerm35),
+		MakeTCellColorExt(color.XTerm36),
+		MakeTCellColorExt(color.XTerm37),
+		MakeTCellColorExt(color.XTerm38),
+		MakeTCellColorExt(color.XTerm39),
+		MakeTCellColorExt(color.XTerm40),
+		MakeTCellColorExt(color.XTerm41),
+		MakeTCellColorExt(color.XTerm42),
+		MakeTCellColorExt(color.XTerm43),
+		MakeTCellColorExt(color.XTerm44),
+		MakeTCellColorExt(color.XTerm45),
+		MakeTCellColorExt(color.XTerm46),
+		MakeTCellColorExt(color.XTerm47),
+		MakeTCellColorExt(color.XTerm48),
+		MakeTCellColorExt(color.XTerm49),
+		MakeTCellColorExt(color.XTerm50),
+		MakeTCellColorExt(color.XTerm51),
+		MakeTCellColorExt(color.XTerm52),
+		MakeTCellColorExt(color.XTerm53),
+		MakeTCellColorExt(color.XTerm54),
+		MakeTCellColorExt(color.XTerm55),
+		MakeTCellColorExt(color.XTerm56),
+		MakeTCellColorExt(color.XTerm57),
+		MakeTCellColorExt(color.XTerm58),
+		MakeTCellColorExt(color.XTerm59),
+		MakeTCellColorExt(color.XTerm60),
+		MakeTCellColorExt(color.XTerm61),
+		MakeTCellColorExt(color.XTerm62),
+		MakeTCellColorExt(color.XTerm63),
+		MakeTCellColorExt(color.XTerm64),
+		MakeTCellColorExt(color.XTerm65),
+		MakeTCellColorExt(color.XTerm66),
+		MakeTCellColorExt(color.XTerm67),
+		MakeTCellColorExt(color.XTerm68),
+		MakeTCellColorExt(color.XTerm69),
+		MakeTCellColorExt(color.XTerm70),
+		MakeTCellColorExt(color.XTerm71),
+		MakeTCellColorExt(color.XTerm72),
+		MakeTCellColorExt(color.XTerm73),
+		MakeTCellColorExt(color.XTerm74),
+		MakeTCellColorExt(color.XTerm75),
+		MakeTCellColorExt(color.XTerm76),
+		MakeTCellColorExt(color.XTerm77),
+		MakeTCellColorExt(color.XTerm78),
+		MakeTCellColorExt(color.XTerm79),
+		MakeTCellColorExt(color.XTerm80),
+		MakeTCellColorExt(color.XTerm81),
+		MakeTCellColorExt(color.XTerm82),
+		MakeTCellColorExt(color.XTerm83),
+		MakeTCellColorExt(color.XTerm84),
+		MakeTCellColorExt(color.XTerm85),
+		MakeTCellColorExt(color.XTerm86),
+		MakeTCellColorExt(color.XTerm87),
+		MakeTCellColorExt(color.XTerm88),
+		MakeTCellColorExt(color.XTerm89),
+		MakeTCellColorExt(color.XTerm90),
+		MakeTCellColorExt(color.XTerm91),
+		MakeTCellColorExt(color.XTerm92),
+		MakeTCellColorExt(color.XTerm93),
+		MakeTCellColorExt(color.XTerm94),
+		MakeTCellColorExt(color.XTerm95),
+		MakeTCellColorExt(color.XTerm96),
+		MakeTCellColorExt(color.XTerm97),
+		MakeTCellColorExt(color.XTerm98),
+		MakeTCellColorExt(color.XTerm99),
+		MakeTCellColorExt(color.XTerm100),
+		MakeTCellColorExt(color.XTerm101),
+		MakeTCellColorExt(color.XTerm102),
+		MakeTCellColorExt(color.XTerm103),
+		MakeTCellColorExt(color.XTerm104),
+		MakeTCellColorExt(color.XTerm105),
+		MakeTCellColorExt(color.XTerm106),
+		MakeTCellColorExt(color.XTerm107),
+		MakeTCellColorExt(color.XTerm108),
+		MakeTCellColorExt(color.XTerm109),
+		MakeTCellColorExt(color.XTerm110),
+		MakeTCellColorExt(color.XTerm111),
+		MakeTCellColorExt(color.XTerm112),
+		MakeTCellColorExt(color.XTerm113),
+		MakeTCellColorExt(color.XTerm114),
+		MakeTCellColorExt(color.XTerm115),
+		MakeTCellColorExt(color.XTerm116),
+		MakeTCellColorExt(color.XTerm117),
+		MakeTCellColorExt(color.XTerm118),
+		MakeTCellColorExt(color.XTerm119),
+		MakeTCellColorExt(color.XTerm120),
+		MakeTCellColorExt(color.XTerm121),
+		MakeTCellColorExt(color.XTerm122),
+		MakeTCellColorExt(color.XTerm123),
+		MakeTCellColorExt(color.XTerm124),
+		MakeTCellColorExt(color.XTerm125),
+		MakeTCellColorExt(color.XTerm126),
+		MakeTCellColorExt(color.XTerm127),
+		MakeTCellColorExt(color.XTerm128),
+		MakeTCellColorExt(color.XTerm129),
+		MakeTCellColorExt(color.XTerm130),
+		MakeTCellColorExt(color.XTerm131),
+		MakeTCellColorExt(color.XTerm132),
+		MakeTCellColorExt(color.XTerm133),
+		MakeTCellColorExt(color.XTerm134),
+		MakeTCellColorExt(color.XTerm135),
+		MakeTCellColorExt(color.XTerm136),
+		MakeTCellColorExt(color.XTerm137),
+		MakeTCellColorExt(color.XTerm138),
+		MakeTCellColorExt(color.XTerm139),
+		MakeTCellColorExt(color.XTerm140),
+		MakeTCellColorExt(color.XTerm141),
+		MakeTCellColorExt(color.XTerm142),
+		MakeTCellColorExt(color.XTerm143),
+		MakeTCellColorExt(color.XTerm144),
+		MakeTCellColorExt(color.XTerm145),
+		MakeTCellColorExt(color.XTerm146),
+		MakeTCellColorExt(color.XTerm147),
+		MakeTCellColorExt(color.XTerm148),
+		MakeTCellColorExt(color.XTerm149),
+		MakeTCellColorExt(color.XTerm150),
+		MakeTCellColorExt(color.XTerm151),
+		MakeTCellColorExt(color.XTerm152),
+		MakeTCellColorExt(color.XTerm153),
+		MakeTCellColorExt(color.XTerm154),
+		MakeTCellColorExt(color.XTerm155),
+		MakeTCellColorExt(color.XTerm156),
+		MakeTCellColorExt(color.XTerm157),
+		MakeTCellColorExt(color.XTerm158),
+		MakeTCellColorExt(color.XTerm159),
+		MakeTCellColorExt(color.XTerm160),
+		MakeTCellColorExt(color.XTerm161),
+		MakeTCellColorExt(color.XTerm162),
+		MakeTCellColorExt(color.XTerm163),
+		MakeTCellColorExt(color.XTerm164),
+		MakeTCellColorExt(color.XTerm165),
+		MakeTCellColorExt(color.XTerm166),
+		MakeTCellColorExt(color.XTerm167),
+		MakeTCellColorExt(color.XTerm168),
+		MakeTCellColorExt(color.XTerm169),
+		MakeTCellColorExt(color.XTerm170),
+		MakeTCellColorExt(color.XTerm171),
+		MakeTCellColorExt(color.XTerm172),
+		MakeTCellColorExt(color.XTerm173),
+		MakeTCellColorExt(color.XTerm174),
+		MakeTCellColorExt(color.XTerm175),
+		MakeTCellColorExt(color.XTerm176),
+		MakeTCellColorExt(color.XTerm177),
+		MakeTCellColorExt(color.XTerm178),
+		MakeTCellColorExt(color.XTerm179),
+		MakeTCellColorExt(color.XTerm180),
+		MakeTCellColorExt(color.XTerm181),
+		MakeTCellColorExt(color.XTerm182),
+		MakeTCellColorExt(color.XTerm183),
+		MakeTCellColorExt(color.XTerm184),
+		MakeTCellColorExt(color.XTerm185),
+		MakeTCellColorExt(color.XTerm186),
+		MakeTCellColorExt(color.XTerm187),
+		MakeTCellColorExt(color.XTerm188),
+		MakeTCellColorExt(color.XTerm189),
+		MakeTCellColorExt(color.XTerm190),
+		MakeTCellColorExt(color.XTerm191),
+		MakeTCellColorExt(color.XTerm192),
+		MakeTCellColorExt(color.XTerm193),
+		MakeTCellColorExt(color.XTerm194),
+		MakeTCellColorExt(color.XTerm195),
+		MakeTCellColorExt(color.XTerm196),
+		MakeTCellColorExt(color.XTerm197),
+		MakeTCellColorExt(color.XTerm198),
+		MakeTCellColorExt(color.XTerm199),
+		MakeTCellColorExt(color.XTerm200),
+		MakeTCellColorExt(color.XTerm201),
+		MakeTCellColorExt(color.XTerm202),
+		MakeTCellColorExt(color.XTerm203),
+		MakeTCellColorExt(color.XTerm204),
+		MakeTCellColorExt(color.XTerm205),
+		MakeTCellColorExt(color.XTerm206),
+		MakeTCellColorExt(color.XTerm207),
+		MakeTCellColorExt(color.XTerm208),
+		MakeTCellColorExt(color.XTerm209),
+		MakeTCellColorExt(color.XTerm210),
+		MakeTCellColorExt(color.XTerm211),
+		MakeTCellColorExt(color.XTerm212),
+		MakeTCellColorExt(color.XTerm213),
+		MakeTCellColorExt(color.XTerm214),
+		MakeTCellColorExt(color.XTerm215),
+		MakeTCellColorExt(color.XTerm216),
+		MakeTCellColorExt(color.XTerm217),
+		MakeTCellColorExt(color.XTerm218),
+		MakeTCellColorExt(color.XTerm219),
+		MakeTCellColorExt(color.XTerm220),
+		MakeTCellColorExt(color.XTerm221),
+		MakeTCellColorExt(color.XTerm222),
+		MakeTCellColorExt(color.XTerm223),
+		MakeTCellColorExt(color.XTerm224),
+		MakeTCellColorExt(color.XTerm225),
+		MakeTCellColorExt(color.XTerm226),
+		MakeTCellColorExt(color.XTerm227),
+		MakeTCellColorExt(color.XTerm228),
+		MakeTCellColorExt(color.XTerm229),
+		MakeTCellColorExt(color.XTerm230),
+		MakeTCellColorExt(color.XTerm231),
+		MakeTCellColorExt(color.XTerm232),
+		MakeTCellColorExt(color.XTerm233),
+		MakeTCellColorExt(color.XTerm234),
+		MakeTCellColorExt(color.XTerm235),
+		MakeTCellColorExt(color.XTerm236),
+		MakeTCellColorExt(color.XTerm237),
+		MakeTCellColorExt(color.XTerm238),
+		MakeTCellColorExt(color.XTerm239),
+		MakeTCellColorExt(color.XTerm240),
+		MakeTCellColorExt(color.XTerm241),
+		MakeTCellColorExt(color.XTerm242),
+		MakeTCellColorExt(color.XTerm243),
+		MakeTCellColorExt(color.XTerm244),
+		MakeTCellColorExt(color.XTerm245),
+		MakeTCellColorExt(color.XTerm246),
+		MakeTCellColorExt(color.XTerm247),
+		MakeTCellColorExt(color.XTerm248),
+		MakeTCellColorExt(color.XTerm249),
+		MakeTCellColorExt(color.XTerm250),
+		MakeTCellColorExt(color.XTerm251),
+		MakeTCellColorExt(color.XTerm252),
+		MakeTCellColorExt(color.XTerm253),
+		MakeTCellColorExt(color.XTerm254),
+		MakeTCellColorExt(color.XTerm255),
 	}
 
 	term2Cache               *lru.Cache
@@ -901,11 +896,11 @@ func init() {
 	grayLookup256_101 = make([]int, 101)
 	grayLookup88_101 = make([]int, 101)
 
-	for i := 0; i < 16; i++ {
+	for i := range 16 {
 		cubeLookup256_16[i] = cubeLookup256[intScale(i, 16, 0x100)]
 		cubeLookup88_16[i] = cubeLookup88[intScale(i, 16, 0x100)]
 	}
-	for i := 0; i < 101; i++ {
+	for i := range 101 {
 		grayLookup256_101[i] = grayLookup256[intScale(i, 101, 0x100)]
 		grayLookup88_101[i] = grayLookup88[intScale(i, 101, 0x100)]
 	}
@@ -925,12 +920,12 @@ func init() {
 
 // makeColorLookup([0, 7, 9], 10)
 // [0, 0, 0, 0, 1, 1, 1, 1, 2, 2]
-//
 func makeColorLookup(vals []int, length int) []int {
 	res := make([]int, length)
 
 	vi := 0
-	for i := 0; i < len(res); i++ {
+	resLen := len(res)
+	for i := range resLen {
 		if vi+1 < len(vals) {
 			if i <= (vals[vi]+vals[vi+1])/2 {
 				res[i] = vi
@@ -949,7 +944,6 @@ func makeColorLookup(vals []int, length int) []int {
 // Scale val in the range [0, val_range-1] to an integer in the range
 // [0, out_range-1].  This implementation uses the "round-half-up" rounding
 // method.
-//
 func intScale(val int, val_range int, out_range int) int {
 	num := val*(out_range-1)*2 + (val_range - 1)
 	dem := (val_range - 1) * 2
@@ -970,7 +964,7 @@ func (e ColorModeMismatch) Error() string {
 }
 
 type InvalidColor struct {
-	Color interface{}
+	Color any
 }
 
 var _ error = InvalidColor{}
@@ -999,21 +993,21 @@ type IColor interface {
 }
 
 // MakeCellStyle constructs a tcell.Style from gowid colors and styles. The return value can be provided
-// to tcell in order to style a particular region of the screen.
+// to in order to style a particular region of the screen.
 func MakeCellStyle(fg TCellColor, bg TCellColor, attr StyleAttrs) tcell.Style {
-	var fgt, bgt tcell.Color
+	var fgt, bgt color.Color
 	if fg == ColorNone {
-		fgt = tcell.ColorDefault
+		fgt = color.Default
 	} else {
 		fgt = fg.ToTCell()
 	}
 	if bg == ColorNone {
-		bgt = tcell.ColorDefault
+		bgt = color.Default
 	} else {
 		bgt = bg.ToTCell()
 	}
-	st := StyleNone.MergeUnder(attr)
-	return tcell.Style{}.Attributes(st.OnOff).Foreground(fgt).Background(bgt)
+	// st := StyleNone.MergeUnder(attr)
+	return tcell.StyleDefault.Foreground(fgt).Background(bgt)
 }
 
 //======================================================================
@@ -1218,7 +1212,7 @@ func (r RGBColor) ToTCellColor(mode ColorMode) (TCellColor, bool) {
 		rd := cubeLookup88_16[r.Red>>4]
 		g := cubeLookup88_16[r.Green>>4]
 		b := cubeLookup88_16[r.Blue>>4]
-		c := tcell.Color((CubeStart + (((rd * cubeSize88) + g) * cubeSize88) + b) + 0) + tcell.ColorValid
+		c := color.Color((CubeStart+(((rd*cubeSize88)+g)*cubeSize88)+b)+0) + color.IsValid
 		return MakeTCellColorExt(c), true
 	case Mode16Colors:
 		return r.findClosest(colorful16, term16, term16Cache), true
@@ -1273,7 +1267,7 @@ func (r UrwidColor) String() string {
 }
 
 // ToTCellColor converts the receiver UrwidColor to a TCellColor, ready for rendering to a
-// tcell screen. This lets UrwidColor conform to IColor.
+// screen. This lets UrwidColor conform to IColor.
 func (s *UrwidColor) ToTCellColor(mode ColorMode) (TCellColor, bool) {
 	if s.cached {
 		switch mode {
@@ -1300,10 +1294,10 @@ func (s *UrwidColor) ToTCellColor(mode ColorMode) (TCellColor, bool) {
 		panic(errors.WithStack(InvalidColor{Color: s}))
 	}
 
-	col := tcell.ColorDefault
+	col := color.Default
 	if idx > 0 {
 		idx = idx - 1
-		col = tcell.ColorValid + tcell.Color(idx)
+		col = color.IsValid + color.Color(idx)
 	}
 	c := MakeTCellColorExt(col)
 
@@ -1390,7 +1384,7 @@ func grayAdjustment256(val int) int {
 }
 
 // ToTCellColor converts the receiver GrayColor to a TCellColor, ready for rendering to a
-// tcell screen. This lets GrayColor conform to IColor.
+// screen. This lets GrayColor conform to IColor.
 func (s GrayColor) ToTCellColor(mode ColorMode) (TCellColor, bool) {
 	switch mode {
 	case Mode24BitColors:
@@ -1398,10 +1392,10 @@ func (s GrayColor) ToTCellColor(mode ColorMode) (TCellColor, bool) {
 		c := tcell.NewRGBColor(int32(adj), int32(adj), int32(adj))
 		return MakeTCellColorExt(c), true
 	case Mode256Colors:
-		x := tcell.Color(grayAdjustment256(grayLookup256_101[s.Val]) + 1) + tcell.ColorValid
+		x := tcell.Color(grayAdjustment256(grayLookup256_101[s.Val])+1) + color.IsValid
 		return MakeTCellColorExt(x), true
 	case Mode88Colors:
-		x := tcell.Color(grayAdjustment88(grayLookup88_101[s.Val]) + 1) + tcell.ColorValid
+		x := tcell.Color(grayAdjustment88(grayLookup88_101[s.Val])+1) + color.IsValid
 		return MakeTCellColorExt(x), true
 	default:
 		panic(errors.WithStack(ColorModeMismatch{Color: s, Mode: mode}))
@@ -1412,7 +1406,7 @@ func (s GrayColor) ToTCellColor(mode ColorMode) (TCellColor, bool) {
 
 // TCellColor is an IColor using tcell's color primitives. If you are not porting from urwid or translating
 // from urwid, this is the simplest approach to using color. Gowid's layering approach means that the empty
-// value for a color should mean "no color preference" - so we want the zero value to mean that. A tcell.Color
+// value for a color should mean "no color preference" - so we want the zero value to mean that. A color.
 // of 0 means "default color". So gowid coopts nil to mean "no color preference".
 type TCellColor struct {
 	tc *tcell.Color
@@ -1431,15 +1425,15 @@ func MakeTCellColor(val string) (TCellColor, error) {
 	match := tcellColorRE.FindStringSubmatch(val) // e.g. "Color00"
 	if len(match) == 2 {
 		n, _ := strconv.ParseUint(match[1], 16, 8)
-		return MakeTCellColorExt(tcell.Color(n) + tcell.ColorValid), nil
-	} else if col, ok := tcell.ColorNames[val]; !ok {
+		return MakeTCellColorExt(color.Color(n) + color.IsValid), nil
+	} else if col, ok := color.Names[val]; !ok {
 		return TCellColor{}, errors.WithStack(InvalidColor{Color: val})
 	} else {
 		return MakeTCellColorExt(col), nil
 	}
 }
 
-// MakeTCellColor returns an initialized TCellColor given a tcell.Color input. The values that can be
+// MakeTCellColor returns an initialized TCellColor given a color. input. The values that can be
 // used are provided here: https://github.com/gdamore/tcell/blob/master/color.go#L41.
 func MakeTCellColorExt(val tcell.Color) TCellColor {
 	return TCellColor{&val}
@@ -1457,14 +1451,14 @@ func (r TCellColor) String() string {
 		return "[no-color]"
 	} else {
 		c := *r.tc
-		return fmt.Sprintf("TCellColor(%v)", tcell.Color(c))
+		return fmt.Sprintf("TCellColor(%v)", color.Color(c))
 	}
 }
 
-// ToTCell converts a TCellColor back to a tcell.Color for passing to tcell APIs.
+// ToTCell converts a TCellColor back to a color. for passing to APIs.
 func (r TCellColor) ToTCell() tcell.Color {
 	if r.tc == nil {
-		return tcell.ColorDefault
+		return color.Default
 	}
 	return *r.tc
 }
@@ -1498,7 +1492,7 @@ type DefaultColor struct{}
 
 // ToTCellColor converts DefaultColor to TCellColor. This lets DefaultColor conform to the IColor interface.
 func (r DefaultColor) ToTCellColor(mode ColorMode) (TCellColor, bool) {
-	return MakeTCellColorExt(tcell.ColorDefault), true
+	return MakeTCellColorExt(color.Default), true
 }
 
 func (r DefaultColor) String() string {
@@ -1726,7 +1720,7 @@ func (m Palette) RangeOverPalette(f func(k string, v ICellStyler) bool) {
 //======================================================================
 
 // IColorToTCell is a utility function that will convert an IColor to a TCellColor
-// in preparation for passing to tcell to render; if the conversion fails, a default
+// in preparation for passing to to render; if the conversion fails, a default
 // TCellColor is returned (provided to the function via a parameter)
 func IColorToTCell(color IColor, def TCellColor, mode ColorMode) TCellColor {
 	res := def

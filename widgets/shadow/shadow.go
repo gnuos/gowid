@@ -8,8 +8,9 @@ package shadow
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gdamore/tcell/v3/color"
+	"github.com/gnuos/gowid"
 )
 
 //======================================================================
@@ -28,7 +29,6 @@ type IWidget interface {
 //
 // Offset is the number of lines to extend the drop shadow down - it is
 // extended right by 2*Offset because terminal cells aren't square.
-//
 type Widget struct {
 	gowid.IWidget
 	offset int // Means y offset, x is 2*y because cells are not squares -
@@ -70,7 +70,7 @@ func (w *Widget) SetOffset(x int, app gowid.IApp) {
 	w.offset = x
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	return UserInput(w, ev, size, focus, app)
 }
 
@@ -88,7 +88,7 @@ func (w *Widget) RenderSize(size gowid.IRenderSize, focus gowid.Selector, app go
 
 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-func UserInput(w gowid.ICompositeWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w gowid.ICompositeWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	subSize := w.SubWidgetSize(size, focus, app)
 
 	if evm, ok := ev.(*tcell.EventMouse); ok {
@@ -108,7 +108,7 @@ func Render(w IWidget, size gowid.IRenderSize, focus gowid.Selector, app gowid.I
 	innerCanvas := w.SubWidget().Render(newSize, focus, app)
 
 	shadowCanvas := gowid.NewCanvasOfSizeExt(innerCanvas.BoxColumns(), innerCanvas.BoxRows(),
-		gowid.MakeCell(' ', gowid.MakeTCellColorExt(tcell.ColorDefault), gowid.MakeTCellColorExt(tcell.ColorBlack), gowid.StyleNone))
+		gowid.MakeCell(' ', gowid.MakeTCellColorExt(tcell.ColorDefault), gowid.MakeTCellColorExt(color.Black), gowid.StyleNone))
 
 	shadowCanvas.ExtendLeft(gowid.EmptyLine(w.Offset() * 2))
 

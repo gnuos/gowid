@@ -12,21 +12,18 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 	"unsafe"
 
 	"github.com/creack/pty"
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/holder"
-	"github.com/gcla/gowid/widgets/null"
-	"github.com/gcla/gowid/widgets/vscroll"
-	tcell "github.com/gdamore/tcell/v2"
-	"github.com/gdamore/tcell/v2/terminfo"
-	"github.com/gdamore/tcell/v2/terminfo/dynamic"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/holder"
+	"github.com/gnuos/gowid/widgets/null"
+	"github.com/gnuos/gowid/widgets/vscroll"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,7 +37,6 @@ type ITerminal interface {
 	Width() int
 	Height() int
 	Modes() *Modes
-	Terminfo() *terminfo.Terminfo
 }
 
 // IWidget encapsulates the requirements of a gowid widget that can represent
@@ -126,7 +122,6 @@ type HotKeyCB struct{}
 type bell struct{}
 type leds struct{}
 type title struct{}
-type hotkey struct{}
 
 type Options struct {
 	Command                 []string
@@ -155,7 +150,6 @@ type Widget struct {
 	canvas              *Canvas
 	modes               Modes
 	curWidth, curHeight int
-	terminfo            *terminfo.Terminfo
 	title               string
 	leds                LEDSState
 	hotKeyDown          bool
@@ -179,32 +173,10 @@ func New(command []string) (*Widget, error) {
 }
 
 func NewExt(opts Options) (*Widget, error) {
-	var err error
-	var ti *terminfo.Terminfo
-
-	var term string
 	for _, s := range opts.Env {
 		if strings.HasPrefix(s, "TERM=") {
-			term = s[len("TERM="):]
 			break
 		}
-	}
-
-	useDefault := true
-
-	if term != "" {
-		ti, err = findTerminfo(term)
-		if err == nil {
-			useDefault = false
-		}
-	}
-
-	if useDefault {
-		ti, err = findTerminfo("xterm")
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	if opts.HotKey == nil {
@@ -230,15 +202,14 @@ func NewExt(opts Options) (*Widget, error) {
 	hold := holder.New(null.New())
 
 	cols := columns.New([]gowid.IContainerWidget{
-		&gowid.ContainerWidget{hold, gowid.RenderWithWeight{W: 1}},
-		&gowid.ContainerWidget{sbar, gowid.RenderWithUnits{U: 1}},
+		&gowid.ContainerWidget{IWidget: hold, D: gowid.RenderWithWeight{W: 1}},
+		&gowid.ContainerWidget{IWidget: sbar, D: gowid.RenderWithUnits{U: 1}},
 	})
 
 	res := &Widget{
 		params:             opts,
 		IHotKeyProvider:    opts.HotKey,
 		IHotKeyPersistence: persistence,
-		terminfo:           ti,
 		sbar:               sbar,
 		cols:               cols,
 		hold:               hold,
@@ -248,10 +219,10 @@ func NewExt(opts Options) (*Widget, error) {
 	res.hold.SetSubWidget(res, nil)
 	res.cols.SetFocus(nil, 0)
 
-	sbar.OnClickAbove(gowid.WidgetCallback{"cb", res.clickUp})
-	sbar.OnClickBelow(gowid.WidgetCallback{"cb", res.clickDown})
-	sbar.OnClickUpArrow(gowid.WidgetCallback{"cb", res.clickUpArrow})
-	sbar.OnClickDownArrow(gowid.WidgetCallback{"cb", res.clickDownArrow})
+	sbar.OnClickAbove(gowid.WidgetCallback{Name: "cb", WidgetChangedFunction: res.clickUp})
+	sbar.OnClickBelow(gowid.WidgetCallback{Name: "cb", WidgetChangedFunction: res.clickDown})
+	sbar.OnClickUpArrow(gowid.WidgetCallback{Name: "cb", WidgetChangedFunction: res.clickUpArrow})
+	sbar.OnClickDownArrow(gowid.WidgetCallback{Name: "cb", WidgetChangedFunction: res.clickDownArrow})
 
 	var _ gowid.IWidget = res
 	var _ ITerminal = res
@@ -264,7 +235,7 @@ func NewExt(opts Options) (*Widget, error) {
 }
 
 func (w *Widget) String() string {
-	return fmt.Sprintf("terminal")
+	return "terminal"
 }
 
 func (w *Widget) Scrolling() bool {
@@ -273,10 +244,6 @@ func (w *Widget) Scrolling() bool {
 
 func (w *Widget) Modes() *Modes {
 	return &w.modes
-}
-
-func (w *Widget) Terminfo() *terminfo.Terminfo {
-	return w.terminfo
 }
 
 func (w *Widget) ScrollbarEnabled() bool {
@@ -440,7 +407,7 @@ func (w *Widget) Write(p []byte) (n int, err error) {
 	return
 }
 
-func (w *Widget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *Widget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	if !w.scrollbarTmpOff && w.params.Scrollbar {
 		w.scrollbarTmpOff = true
 		res := w.cols.UserInput(ev, size, focus, app)
@@ -601,40 +568,46 @@ func (w *Widget) StartCommand(app gowid.IApp, width, height int) error {
 	master := w.master
 	canvas := w.canvas
 
-	canvas.AddCallback(Title{}, gowid.Callback{title{}, func(args ...interface{}) {
-		title := args[0].(string)
-		app.Run(&appRunExt{
-			fn: func(app gowid.IApp) bool {
-				w.SetTitle(title, app)
-				return false
-			},
-		})
-	}})
+	canvas.AddCallback(Title{}, gowid.Callback{
+		Name: title{},
+		CallbackFunction: func(args ...any) {
+			title := args[0].(string)
+			app.Run(&appRunExt{
+				fn: func(app gowid.IApp) bool {
+					w.SetTitle(title, app)
+					return false
+				},
+			})
+		}})
 
-	canvas.AddCallback(Bell{}, gowid.Callback{bell{}, func(args ...interface{}) {
-		app.Run(&appRunExt{
-			fn: func(app gowid.IApp) bool {
-				w.Bell(app)
-				return false
-			},
-		})
-	}})
+	canvas.AddCallback(Bell{}, gowid.Callback{
+		Name: bell{},
+		CallbackFunction: func(args ...any) {
+			app.Run(&appRunExt{
+				fn: func(app gowid.IApp) bool {
+					w.Bell(app)
+					return false
+				},
+			})
+		}})
 
-	canvas.AddCallback(LEDs{}, gowid.Callback{leds{}, func(args ...interface{}) {
-		mode := args[0].(LEDSState)
-		app.Run(&appRunExt{
-			fn: func(app gowid.IApp) bool {
-				w.SetLEDs(app, mode)
-				return false
-			},
-		})
-	}})
+	canvas.AddCallback(LEDs{}, gowid.Callback{
+		Name: leds{},
+		CallbackFunction: func(args ...any) {
+			mode := args[0].(LEDSState)
+			app.Run(&appRunExt{
+				fn: func(app gowid.IApp) bool {
+					w.SetLEDs(app, mode)
+					return false
+				},
+			})
+		}})
 
 	if w.params.EnableBracketedPaste {
 		app.Run(&appRunExt{
 			fn: func(app gowid.IApp) bool {
 				redraw := false
-				for _, b := range enablePaste(w.terminfo) {
+				for _, b := range []byte("\x1b[?2004h") {
 					if canvas.ProcessByteExt(b) {
 						redraw = true
 					}
@@ -730,7 +703,7 @@ func (w *Widget) clickDownArrow(app gowid.IApp, w2 gowid.IWidget) {
 
 //''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func UserInput(w IWidget, ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	// Set true if this function has claimed the input
 	res := false
 	// True if input should be sent to tty
@@ -753,8 +726,8 @@ func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Se
 			case tcell.KeyDown:
 				w.Scroll(ScrollDown, false, 1)
 			case tcell.KeyRune:
-				switch evk.Rune() {
-				case 'q', 'Q':
+				switch evk.Str() {
+				case "q", "Q":
 					w.ResetScroll()
 				}
 			default:
@@ -817,7 +790,7 @@ func UserInput(w IWidget, ev interface{}, size gowid.IRenderSize, focus gowid.Se
 		}
 	}
 	if passToTerminal {
-		seq, parsed := TCellEventToBytes(ev, w.Modes(), app.GetLastMouseState(), w, w.Terminfo())
+		seq, parsed := TCellEventToBytes(ev, w.Modes(), app.GetLastMouseState(), w)
 
 		if parsed {
 			_, err := w.Write(seq)
@@ -849,40 +822,3 @@ func PtyStart1(c *exec.Cmd) (pty2, tty *os.File, err error) {
 	c.SysProcAttr.Setsid = true
 	return pty2, tty, err
 }
-
-//======================================================================
-
-var cachedTerminfo map[string]*terminfo.Terminfo
-var cachedTerminfoMutex sync.Mutex
-
-func init() {
-	cachedTerminfo = make(map[string]*terminfo.Terminfo)
-}
-
-// findTerminfo returns a terminfo struct via tcell's dynamic method first,
-// then using the built-in databases. The aim is to use the terminfo database
-// most likely to be correct. Maybe even better would be parsing the terminfo
-// file directly using something like https://github.com/beevik/terminfo/, to
-// avoid the extra process.
-func findTerminfo(name string) (*terminfo.Terminfo, error) {
-	cachedTerminfoMutex.Lock()
-	if ti, ok := cachedTerminfo[name]; ok {
-		cachedTerminfoMutex.Unlock()
-		return ti, nil
-	}
-	ti, _, e := dynamic.LoadTerminfo(name)
-	if e == nil {
-		cachedTerminfo[name] = ti
-		cachedTerminfoMutex.Unlock()
-		return ti, nil
-	}
-	ti, e = terminfo.LookupTerminfo(name)
-	cachedTerminfoMutex.Unlock()
-	return ti, e
-}
-
-//======================================================================
-// Local Variables:
-// mode: Go
-// fill-column: 110
-// End:

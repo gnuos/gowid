@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -50,11 +50,10 @@ type IRenderContext interface {
 // It provides several features:
 // - a function to terminate the application
 // - access to the state of the mouse
-// - access to the underlying tcell screen
+// - access to the underlying screen
 // - access to an application-specific logger
 // - functions to get and set the root widget of the widget hierarchy
 // - a method to keep track of which widgets were last "clicked"
-//
 type IApp interface {
 	IRenderContext
 	IGetScreen
@@ -84,7 +83,7 @@ type IApp interface {
 type App struct {
 	IPalette                                    // App holds an IPalette and provides it to each widget when rendering
 	screen               tcell.Screen           // Each app has one screen
-	TCellEvents          chan tcell.Event       // Events from tcell e.g. resize
+	TCellEvents          chan tcell.Event       // Events from e.g. resize
 	AfterRenderEvents    chan IAfterRenderEvent // Functions intended to run on the widget goroutine
 	closing              bool                   // If true then app is in process of closing - it may be draining AfterRenderEvents.
 	closingMtx           sync.Mutex             // Make sure an AfterRenderEvent and closing don't race.
@@ -126,20 +125,20 @@ type AppArgs struct {
 // IUnhandledInput is used as a handler for application user input that is not handled by any
 // widget in the widget hierarchy.
 type IUnhandledInput interface {
-	UnhandledInput(app IApp, ev interface{}) bool
+	UnhandledInput(app IApp, ev any) bool
 }
 
 // UnhandledInputFunc satisfies IUnhandledInput, allowing use of a simple function for
 // handling input not claimed by any widget.
-type UnhandledInputFunc func(app IApp, ev interface{}) bool
+type UnhandledInputFunc func(app IApp, ev any) bool
 
-func (f UnhandledInputFunc) UnhandledInput(app IApp, ev interface{}) bool {
+func (f UnhandledInputFunc) UnhandledInput(app IApp, ev any) bool {
 	return f(app, ev)
 }
 
 // IgnoreUnhandledInput is a helper function for main loops that don't need to deal
 // with hanlding input that the widgets haven't claimed.
-var IgnoreUnhandledInput UnhandledInputFunc = func(app IApp, ev interface{}) bool {
+var IgnoreUnhandledInput UnhandledInputFunc = func(app IApp, ev any) bool {
 	return false
 }
 
@@ -164,7 +163,6 @@ func MakeClickTargets() ClickTargets {
 // widget might be recreated between the click down and release, and the
 // widget under focus at the time of the release provides the same ID()
 // (even if not the same object), then it can be given the click.
-//
 func (t ClickTargets) SetClickTarget(k tcell.ButtonMask, w IIdentityWidget) bool {
 	targets, ok := t.click[k]
 	if !ok {
@@ -241,14 +239,14 @@ func NewApp(args AppArgs) (rapp *App, rerr error) {
 
 // NewAppSafe returns an initialized App struct, or an error on failure. It will
 // initialize a tcell.Screen object and enable mouse support if its not provided,
-// meaning that tcell will receive mouse events if the terminal supports them.
+// meaning that will receive mouse events if the terminal supports them.
 func newApp(args AppArgs) (rapp *App, rerr error) {
 	screen := args.Screen
 	if screen == nil {
 		var err error
 		screen, err = tcellScreen(args.Tty)
 		if err != nil {
-			rerr = WithKVs(err, map[string]interface{}{"TERM": os.Getenv("TERM")})
+			rerr = WithKVs(err, map[string]any{"TERM": os.Getenv("TERM")})
 			return
 		}
 	}
@@ -406,7 +404,7 @@ func (a *App) TerminalSize() (x, y int) {
 		// - the environment variables "LINES" and "COLUMNS"
 		// - from the termcap entries "li" and "co"
 		//
-		// If tcell still reports (0,0) after following these rules, fall
+		// If still reports (0,0) after following these rules, fall
 		// back to a default like vim does:
 		//
 		// https://github.com/vim/vim/blob/master/runtime/doc/term.txt#L642
@@ -420,7 +418,7 @@ func (a *App) TerminalSize() (x, y int) {
 
 type LogField struct {
 	Name string
-	Val  interface{}
+	Val  any
 }
 
 type CopyModeEvent struct{}
@@ -449,7 +447,7 @@ func (c CopyModeClipsEvent) When() time.Time {
 
 type privateId struct{}
 
-func (n privateId) ID() interface{} {
+func (n privateId) ID() any {
 	return n
 }
 
@@ -460,7 +458,7 @@ func (a *App) Clips() []ICopyResult {
 		res = append(res, clips...)
 	})
 
-	unh := UnhandledInputFunc(func(app IApp, ev interface{}) bool {
+	unh := UnhandledInputFunc(func(app IApp, ev any) bool {
 		return true
 	})
 
@@ -479,7 +477,7 @@ func (a *App) Clips() []ICopyResult {
 // to onInputEvent, which will check the widget hierarchy to see if the
 // input can be processed; other events might result in gowid updating its
 // internal state, like the size of the underlying terminal.
-func (a *App) HandleTCellEvent(ev interface{}, unhandled IUnhandledInput) {
+func (a *App) HandleTCellEvent(ev any, unhandled IUnhandledInput) {
 	switch ev := ev.(type) {
 	case *tcell.EventKey, *tcell.EventPaste:
 		// This makes for a better experience on limited hardware like raspberry pi
@@ -501,7 +499,7 @@ func (a *App) HandleTCellEvent(ev interface{}, unhandled IUnhandledInput) {
 		a.RedrawTerminal()
 
 		//case *tcell.EventPaste:
-		//log.Infof("GCLA: app.go tcell paste")
+		//log.Infof("GCLA: app.go paste")
 
 	case *tcell.EventMouse:
 		if !a.prevWasMouseMove || a.enableMouseMotion || ev.Modifiers() != 0 || ev.Buttons() != 0 {
@@ -581,7 +579,7 @@ func (a *App) StartTCellEvents(quit <-chan Unit, wg *sync.WaitGroup) {
 		defer wg.Done()
 	Loop:
 		for {
-			a.TCellEvents <- a.screen.PollEvent()
+			a.TCellEvents <- <-a.screen.EventQ()
 			select {
 			case <-quit:
 				break Loop
@@ -595,7 +593,7 @@ func (a *App) StartTCellEvents(quit <-chan Unit, wg *sync.WaitGroup) {
 // to the quit channel first to stop the TCell event goroutine.
 func (a *App) StopTCellEvents(quit chan<- Unit, wg *sync.WaitGroup) {
 	quit <- Unit{}
-	a.screen.PostEventWait(tcell.NewEventInterrupt(nil))
+	a.screen.EventQ() <- tcell.NewEventInterrupt(nil)
 	wg.Wait()
 }
 
@@ -607,10 +605,10 @@ func (a *App) SimpleMainLoop() {
 
 // HandleQuitKeys is provided as a simple way to terminate your application using typical
 // "quit" keys - q/Q, ctrl-c, escape.
-func HandleQuitKeys(app IApp, event interface{}) bool {
+func HandleQuitKeys(app IApp, event any) bool {
 	handled := false
 	if ev, ok := event.(*tcell.EventKey); ok {
-		if ev.Key() == tcell.KeyCtrlC || ev.Key() == tcell.KeyEsc || ev.Rune() == 'q' || ev.Rune() == 'Q' {
+		if ev.Key() == tcell.KeyCtrlC || ev.Key() == tcell.KeyEsc || ev.Str() == "q" || ev.Str() == "Q" {
 			app.Quit()
 			handled = true
 		}
@@ -692,7 +690,7 @@ Loop:
 // handleInputEvent manages key-press events. A keybinding handler is called when
 // a key-press or mouse event satisfies a configured keybinding. Furthermore,
 // currentView's internal buffer is modified if currentView.Editable is true.
-func (a *App) handleInputEvent(ev interface{}, unhandled IUnhandledInput) {
+func (a *App) handleInputEvent(ev any, unhandled IUnhandledInput) {
 	switch ev.(type) {
 	case *tcell.EventKey, *tcell.EventPaste, *tcell.EventMouse:
 		x, y := a.TerminalSize()
@@ -797,7 +795,7 @@ func (f RunFunction) RunThenRenderEvent(app IApp) {
 	f(app)
 }
 
-var AppClosingErr = fmt.Errorf("App is closing - no more events accepted.")
+var ErrAppClosing = fmt.Errorf("app is closing - no more events accepted")
 
 // Run executes this function on the goroutine that renders
 // widgets and processes their callbacks. Any function that manipulates
@@ -812,7 +810,7 @@ func (a *App) Run(f IAfterRenderEvent) error {
 		a.AfterRenderEvents <- f
 		return nil
 	}
-	return AppClosingErr
+	return ErrAppClosing
 }
 
 // Redraw will re-render the widget hierarchy.
@@ -830,14 +828,14 @@ func (a *App) Quit() {
 }
 
 // Let screen be taken over by gowid/tcell. A new screen struct is created because
-// I can't make tcell claim and release the same screen successfully. Clients of
+// I can't make claim and release the same screen successfully. Clients of
 // the app struct shouldn't cache the screen object returned via GetScreen().
 //
 // Assumes we own the screen...
 func (a *App) ActivateScreen() error {
 	screen, err := tcellScreen(a.tty)
 	if err != nil {
-		return WithKVs(err, map[string]interface{}{"TERM": os.Getenv("TERM")})
+		return WithKVs(err, map[string]any{"TERM": os.Getenv("TERM")})
 	}
 	a.DeactivateScreen()
 	a.screen = screen
@@ -861,7 +859,7 @@ func (a *App) DeactivateScreen() {
 
 func (a *App) initScreen() error {
 	if err := a.screen.Init(); err != nil {
-		return WithKVs(err, map[string]interface{}{"TERM": os.Getenv("TERM")})
+		return WithKVs(err, map[string]any{"TERM": os.Getenv("TERM")})
 	}
 
 	a.screenInited = true
@@ -876,7 +874,7 @@ func (a *App) initScreen() error {
 		defBg = IColorToTCell(bgCol, defBg, a.GetColorMode())
 		defSt = defSt.MergeUnder(style)
 	}
-	defStyle := tcell.Style{}.Attributes(defSt.OnOff).Background(defBg.ToTCell()).Foreground(defFg.ToTCell())
+	defStyle := tcell.StyleDefault.Background(defBg.ToTCell()).Foreground(defFg.ToTCell())
 	// Ask TCell to set the screen's default style according to the palette's "default"
 	// config, if one is provided. This might make every screen cell underlined, for example,
 	// in the absence of overriding styling from widgets.

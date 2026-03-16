@@ -11,8 +11,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/gwutil"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/gwutil"
 	"github.com/mattn/go-runewidth"
 )
 
@@ -321,7 +321,7 @@ func NewFromContentExt(content IContent, opts Options) *Widget {
 }
 
 func (w *Widget) String() string {
-	return fmt.Sprintf("text")
+	return "text"
 }
 
 // Writer is a wrapper around a text Widget which, by including the app, can be used
@@ -837,7 +837,7 @@ func (w *CopyableWidget) Clips(app gowid.IApp) []gowid.ICopyResult {
 	}
 }
 
-func (w *CopyableWidget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *CopyableWidget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	claimed := false
 	if _, ok := ev.(gowid.CopyModeEvent); ok {
 		// zero means deepest should try to claim - leaf knows it's a leaf.

@@ -46,7 +46,7 @@ import (
 
 var txt *text.Widget
 
-func unhandled(app gowid.IApp, ev interface{}) bool {
+func unhandled(app gowid.IApp, ev any) bool {
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		switch evk.Rune() {
 		case 'q', 'Q':
@@ -212,7 +212,7 @@ type QuestionBox struct {
 	gowid.IWidget
 }
 
-func (w *QuestionBox) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *QuestionBox) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := true
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		switch evk.Key() {
@@ -296,7 +296,7 @@ func main() {
 ```
 - The bottom-most widget in the pile is a `button.Widget`. It itself wraps an inner widget, and when rendered will add characters on the left and right of the inner widget to create a button effect.
 - `button.Widget` can call an interface method when it's clicked. `OnClick()` expects an `IWidgetChangedCallback`. You can use the `WidgetCallback()` adapter to pass a simple function. 
-- The first parameter of `WidgetCallback` is an `interface{}`. It's meant to uniquely identify this callback instance so that if you later need to remove the callback, you can by passing the same `interface{}`. Here I've used a simple string, "cb". The callbacks are scoped to the widget, so you can use the same callback identifier when registering callbacks for other widgets. 
+- The first parameter of `WidgetCallback` is an `any`. It's meant to uniquely identify this callback instance so that if you later need to remove the callback, you can by passing the same `any`. Here I've used a simple string, "cb". The callbacks are scoped to the widget, so you can use the same callback identifier when registering callbacks for other widgets. 
 - `edit.Widget` can call an interface method when its text changes. In this example, every time the user enters a character, `ask` will update the `reply` widget so that it displays a message.
 - The callback will be called with two arguments - the application `app` and the widget issuing the callback. But if it's more convenient, you can rely on Go's scope rules to capture the widgets that you need to modify in the callback. `ask`'s callback refers to `reply` and not the callback parameter `w`. 
 - The `<exit>` button is styled using `MakeStyleAs()`, which applies a text style like underline, bold or reverse-video. No colors are given, so the button will use the terminal's default colors.
@@ -349,7 +349,7 @@ func NewConversationWidget() *ConversationWidget {
 	return &ConversationWidget{lb}
 }
 
-func (w *ConversationWidget) UserInput(ev interface{}, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
+func (w *ConversationWidget) UserInput(ev any, size gowid.IRenderSize, focus gowid.Selector, app gowid.IApp) bool {
 	res := false
 	if evk, ok := ev.(*tcell.EventKey); ok && evk.Key() == tcell.KeyEnter {
 		res = true

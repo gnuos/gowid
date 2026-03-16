@@ -8,20 +8,20 @@ package main
 import (
 	"fmt"
 
-	"github.com/gcla/gowid"
-	"github.com/gcla/gowid/examples"
-	"github.com/gcla/gowid/gwutil"
-	"github.com/gcla/gowid/widgets/button"
-	"github.com/gcla/gowid/widgets/checkbox"
-	"github.com/gcla/gowid/widgets/columns"
-	"github.com/gcla/gowid/widgets/framed"
-	"github.com/gcla/gowid/widgets/list"
-	"github.com/gcla/gowid/widgets/palettemap"
-	"github.com/gcla/gowid/widgets/selectable"
-	"github.com/gcla/gowid/widgets/styled"
-	"github.com/gcla/gowid/widgets/text"
-	"github.com/gcla/gowid/widgets/tree"
-	tcell "github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
+	"github.com/gnuos/gowid"
+	"github.com/gnuos/gowid/examples"
+	"github.com/gnuos/gowid/gwutil"
+	"github.com/gnuos/gowid/widgets/button"
+	"github.com/gnuos/gowid/widgets/checkbox"
+	"github.com/gnuos/gowid/widgets/columns"
+	"github.com/gnuos/gowid/widgets/framed"
+	"github.com/gnuos/gowid/widgets/list"
+	"github.com/gnuos/gowid/widgets/palettemap"
+	"github.com/gnuos/gowid/widgets/selectable"
+	"github.com/gnuos/gowid/widgets/styled"
+	"github.com/gnuos/gowid/widgets/text"
+	"github.com/gnuos/gowid/widgets/tree"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,7 +40,7 @@ func MakeDemoDecoration(pos tree.IPos, tr tree.IModel, wmaker tree.IWidgetMaker)
 	}
 	pad := gwutil.StringOfLength(' ', level*10)
 	cwidgets := make([]gowid.IContainerWidget, 0)
-	cwidgets = append(cwidgets, &gowid.ContainerWidget{text.New(pad), gowid.RenderWithUnits{U: len(pad)}})
+	cwidgets = append(cwidgets, &gowid.ContainerWidget{IWidget: text.New(pad), D: gowid.RenderWithUnits{U: len(pad)}})
 	if ct, ok := tr.(tree.ICollapsible); ok {
 		var bn *button.Widget
 		if ct.IsCollapsed() {
@@ -53,29 +53,30 @@ func MakeDemoDecoration(pos tree.IPos, tr tree.IModel, wmaker tree.IWidgetMaker)
 		// a separate button depending on whether or not the tree is collapsed, it will
 		// correctly work when the DecoratorMaker is caching the widgets i.e. it will
 		// collapse or expand even when the widget is rendered from the cache
-		bn.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-			// Run this outside current event loop because we are implicitly
-			// adjusting the data structure behind the list walker, and it's
-			// not prepared to handle that in the same pass of processing
-			// UserInput. TODO.
-			app.Run(gowid.RunFunction(func(app gowid.IApp) {
-				ct.SetCollapsed(app, !ct.IsCollapsed())
-			}))
-		}})
+		bn.OnClick(gowid.WidgetCallback{Name: "cb",
+			WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+				// Run this outside current event loop because we are implicitly
+				// adjusting the data structure behind the list walker, and it's
+				// not prepared to handle that in the same pass of processing
+				// UserInput. TODO.
+				app.Run(gowid.RunFunction(func(app gowid.IApp) {
+					ct.SetCollapsed(app, !ct.IsCollapsed())
+				}))
+			}})
 
 		cwidgets = append(cwidgets, &gowid.ContainerWidget{
-			framed.NewUnicode(
+			IWidget: framed.NewUnicode(
 				styled.NewExt(
 					bn,
 					gowid.MakePaletteRef("body"),
 					gowid.MakePaletteRef("fbody"),
 				),
 			),
-			gowid.RenderFixed{},
+			D: gowid.RenderFixed{},
 		})
 	}
 	inner := wmaker.MakeWidget(pos, tr)
-	cwidgets = append(cwidgets, &gowid.ContainerWidget{inner, gowid.RenderFixed{}})
+	cwidgets = append(cwidgets, &gowid.ContainerWidget{IWidget: inner, D: gowid.RenderFixed{}})
 
 	res = palettemap.New(
 		columns.New(cwidgets),
@@ -90,17 +91,18 @@ func MakeDemoWidget(pos tree.IPos, tr tree.IModel) gowid.IWidget {
 	var res gowid.IWidget
 
 	cbox := checkbox.New(false)
-	cbox.OnClick(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		log.Info("Clicked checkbox in tree")
-	}})
+	cbox.OnClick(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			log.Info("Clicked checkbox in tree")
+		}})
 
 	res = columns.New([]gowid.IContainerWidget{
 		&gowid.ContainerWidget{
-			framed.NewUnicode(cbox),
-			gowid.RenderFixed{},
+			IWidget: framed.NewUnicode(cbox),
+			D:       gowid.RenderFixed{},
 		},
 		&gowid.ContainerWidget{
-			styled.NewExt(
+			IWidget: styled.NewExt(
 				framed.NewUnicode(
 					selectable.New(
 						text.NewFromContent(
@@ -118,7 +120,7 @@ func MakeDemoWidget(pos tree.IPos, tr tree.IModel) gowid.IWidget {
 				gowid.MakePaletteRef("body"),
 				gowid.MakePaletteRef("fbody"),
 			),
-			gowid.RenderFixed{},
+			D: gowid.RenderFixed{},
 		},
 	})
 
@@ -129,20 +131,20 @@ func MakeDemoWidget(pos tree.IPos, tr tree.IModel) gowid.IWidget {
 
 type handler struct{}
 
-func (h handler) UnhandledInput(app gowid.IApp, ev interface{}) bool {
+func (h handler) UnhandledInput(app gowid.IApp, ev any) bool {
 	handled := false
 	if evk, ok := ev.(*tcell.EventKey); ok {
 		handled = true
-		if evk.Key() == tcell.KeyCtrlC || evk.Rune() == 'q' || evk.Rune() == 'Q' {
+		if evk.Key() == tcell.KeyCtrlC || evk.Str() == "q" || evk.Str() == "Q" {
 			app.Quit()
-		} else if evk.Rune() == 'x' {
+		} else if evk.Str() == "x" {
 			f := walker.Focus()
 			f2 := f.(tree.IPos)
 			s := f2.GetSubStructure(parent1)
 			if t2, ok := s.(tree.ICollapsible); ok {
 				t2.SetCollapsed(app, true)
 			}
-		} else if evk.Rune() == 'z' {
+		} else if evk.Str() == "z" {
 			f := walker.Focus()
 			f2 := f.(tree.IPos)
 			s := f2.GetSubStructure(parent1)
@@ -196,9 +198,10 @@ func main() {
 		tree.NewCachingMaker(tree.WidgetMakerFunction(MakeDemoWidget)),
 		tree.NewCachingDecorator(tree.DecoratorFunction(MakeDemoDecoration)))
 	tb = tree.New(walker)
-	tb.OnFocusChanged(gowid.WidgetCallback{"cb", func(app gowid.IApp, w gowid.IWidget) {
-		log.Infof("Focus changed - widget is now %v", w)
-	}})
+	tb.OnFocusChanged(gowid.WidgetCallback{Name: "cb",
+		WidgetChangedFunction: func(app gowid.IApp, w gowid.IWidget) {
+			log.Infof("Focus changed - widget is now %v", w)
+		}})
 	view := styled.New(tb, body)
 
 	app, err := gowid.NewApp(gowid.AppArgs{
